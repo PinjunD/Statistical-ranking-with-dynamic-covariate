@@ -140,14 +140,17 @@ def multi_fixu(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
 
     return v
 
-def multi_alternative(T,K,n = None, u = None ,v = None,P = False,E = 1e-6,detail = False):
+def multi_alternative(T,K,n, d = None, u = None ,v = None,P = False,E = 1e-6,detail = False):
     if n is None:
         node = list(set(sum(T, [])))
         n = len(node)
         T = [[node.index(e) for e in t] for t in T]
     else:
         pass
-    d = len(K[0].T)
+    if d is None:
+        d = len(K[0].T)
+    else:
+        pass
     W = multi_Win(T,n)
     if d == 0 or P:
         PL = True
@@ -227,7 +230,7 @@ def pair_fixv(T,K,v,n, E = 1e-6 , I = 1000, utr = None,detail = False):
     u = np.log(R_new)
     u = u - np.mean(u)
     if detail:
-        print(f'v iterative times: {i} and v = {v}')
+        print(f'u iterative times: {i}')
     else:
         pass
     return u
@@ -255,14 +258,17 @@ def pair_fixu(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
             error = max(abs(v_updata))
         i += 1
     if detail:
-        print(f'u iterative times: {i}')
+        print(f'v iterative times: {i} and v = {v}')
     else:
         pass
     return v
 
-def pair_alternative(T,K,n,u = None ,v = None,P = False,E = 1e-6,detail = False):
-    KK = np.array([k[0,:] - k[1,:] for k in K])
-    d = KK.shape[1]
+def pair_alternative(T,K,n,d=None, u = None ,v = None,P = False,E = 1e-6,detail = False):
+    KK = np.array([k[0] - k[1] for k in K])
+    if d is None:
+        d = KK.shape[-1]
+    else:
+        pass
     if d == 0 or P:
         PL = True
     else:
@@ -295,11 +301,11 @@ def pair_alternative(T,K,n,u = None ,v = None,P = False,E = 1e-6,detail = False)
     u = pair_fixv(T, KK, v, n, utr = u,detail=detail)
     return u, v
 
-def AM(T,K,n = None, u = None ,v = None,P = False,E = 1e-6,detail = False,type = 'multi'):
+def AM(T,K,n, d =None, u = None ,v = None,P = False,E = 1e-3,detail = False,type = 'multi'):
     if type == 'multi':
-        u, v= multi_alternative(T,K,n = n, u = u ,v = v,P = P,E = E,detail = detail)
+        u, v= multi_alternative(T,K,n,d, u = u ,v = v,P = P,E = E,detail = detail)
     elif type == 'pair':
-        u, v= pair_alternative(T,K,n = n, u = u ,v = v,P = P,E = E,detail = detail)
+        u, v= pair_alternative(T,K,n,d, u = u ,v = v,P = P,E = E,detail = detail)
     else:
         print('please choose \'multi\' or \'pair\'')
     return u,v
