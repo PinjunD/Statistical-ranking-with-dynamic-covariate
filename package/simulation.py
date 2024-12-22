@@ -7,7 +7,7 @@ def simulation(n, N, v, m_lower, m_upper,
                 repeat_time = 1,
                 ):
     current_dir = os.getcwd()
-    data_dir = current_dir + '\\' + 'synthesis' + '\\'
+    data_dir = current_dir + '\\' +'data' + '\\' + 'synthesis' + '\\'
 
     d = len(v)
     for nn in n:

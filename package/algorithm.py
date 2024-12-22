@@ -141,7 +141,7 @@ def multi_fixu(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
     return v
 
 def multi_alternative(T,K,n, d = None, u = None ,v = None,P = False,
-                      E = 1e-6,Eu=1e-4,Ev=1e-8,detail = False):
+                      E = 1e-6,Eu=1e-4,Ev=1e-8,I=50,detail = False):
     if n is None:
         node = list(set(sum(T, [])))
         n = len(node)
@@ -173,7 +173,7 @@ def multi_alternative(T,K,n, d = None, u = None ,v = None,P = False,
             print(f'log-likelihood: {l1}')
         else:
             pass
-        u1 = multi_fixv(T, K, v, n, W, utr = u,E=Eu,detail=detail)
+        u1 = multi_fixv(T, K, v, n, W, utr = u,I=I,E=Eu,detail=detail)
         v1 = multi_fixu(T, K, u, d, vtr=v.copy(),E=Ev,detail=detail)
         u = u1
         v = v1
@@ -181,7 +181,7 @@ def multi_alternative(T,K,n, d = None, u = None ,v = None,P = False,
         error = l2 - l1
         l1 = l2
         i += 1
-    u = multi_fixv(T, K, v, n, W,E=Eu, utr = u)
+    u = multi_fixv(T, K, v, n, W,E=Eu,I=1000, utr = u)
     if P:
         pass
     else:
@@ -265,7 +265,7 @@ def pair_fixu(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
     return v
 
 def pair_alternative(T,K,n,d=None, u = None ,v = None,P = False,
-                     E = 1e-6,Eu=1e-4,Ev=1e-8,detail = False):
+                     E = 1e-6,Eu=1e-4,Ev=1e-8,I = 50,detail = False):
     KK = np.array([k[0] - k[1] for k in K])
     if d is None:
         d = KK.shape[-1]
@@ -286,12 +286,13 @@ def pair_alternative(T,K,n,d=None, u = None ,v = None,P = False,
     l1 = pair_likelihood(T,K,u,v)
     i, error = 1, 1
     while error > E and i < 100 and not PL:
+        
         if detail:
             print('-'*5+f'{i}'+'-'*5)
             print(f'log-likelihood: {l1}')
         else:
             pass
-        u1 = pair_fixv(T, KK, v, n, utr = u,E=Eu,detail=detail)
+        u1 = pair_fixv(T, KK, v, n, utr = u,E=Eu,I=I,detail=detail)
         v1 = pair_fixu(T, KK, u1, d, vtr = v.copy(),E=Ev,detail=detail)
         
         u = u1
@@ -300,14 +301,15 @@ def pair_alternative(T,K,n,d=None, u = None ,v = None,P = False,
         error = l2 - l1
         l1 = l2
         i += 1
-    u = pair_fixv(T, KK, v, n, utr = u,E=Eu,detail=detail)
+        I += 10*i
+    u = pair_fixv(T, KK, v, n, utr = u,E=Eu,I=1000,detail=detail)
     return u, v
 
-def AM(T,K,n, d =None, u = None ,v = None,P = False,E = 1e-3,Eu=1e-4,Ev=1e-8,detail = False,type = 'multi'):
+def AM(T,K,n, d =None, u = None ,v = None,P = False,E = 1e-3,Eu=1e-4,Ev=1e-8,detail = False,type = 'multi',I=50):
     if type == 'multi':
-        u, v= multi_alternative(T,K,n,d, u = u ,v = v,P = P,E = E,Eu=Eu,Ev=Ev,detail = detail)
+        u, v= multi_alternative(T,K,n,d, u = u ,v = v,P = P,E = E,Eu=Eu,Ev=Ev,I=I,detail = detail)
     elif type == 'pair':
-        u, v= pair_alternative(T,K,n,d, u = u ,v = v,P = P,E = E,Eu=Eu,Ev=Ev,detail = detail)
+        u, v= pair_alternative(T,K,n,d, u = u ,v = v,P = P,E = E,Eu=Eu,Ev=Ev,I=I,detail = detail)
     else:
         print('please choose \'multi\' or \'pair\'')
     return u,v

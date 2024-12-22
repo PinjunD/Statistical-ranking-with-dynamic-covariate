@@ -103,10 +103,9 @@ def pro_data(Data):
     Mean = np.array(Mean)
     Std = np.array(Std)
     return N, Mean, Std
-def plot(LLabel):
+def plot(LLabel,save_dir):
     current_dir = os.getcwd()
-    data_dir = current_dir + '\\' + 'synthesis' + '\\'
-    save_dir = current_dir + '\\' + 'image' + '\\'
+    data_dir = current_dir + '\\' + 'data' + '\\' + 'synthesis' + '\\'
     Data = []
     N = []
     M = []
