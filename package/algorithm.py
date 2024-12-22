@@ -70,7 +70,7 @@ def multi_updata_R(R,W,D,T,n):
     R_new = W/M
     R_new /= np.sum(R_new)
     return R_new
-def multi_fixv(T,K,v,n,W, E = 1e-6 , I = 1000, utr = None, detail = False):
+def multi_fixv(T,K,v,n,W, E = 1e-6 , I = 50, utr = None, detail = False):
     D = multi_DynamicScore_Win(K, v)
     if utr is None:
         R = np.ones(n)/n
@@ -140,7 +140,8 @@ def multi_fixu(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
 
     return v
 
-def multi_alternative(T,K,n, d = None, u = None ,v = None,P = False,E = 1e-6,detail = False):
+def multi_alternative(T,K,n, d = None, u = None ,v = None,P = False,
+                      E = 1e-6,Eu=1e-4,Ev=1e-8,detail = False):
     if n is None:
         node = list(set(sum(T, [])))
         n = len(node)
@@ -172,19 +173,19 @@ def multi_alternative(T,K,n, d = None, u = None ,v = None,P = False,E = 1e-6,det
             print(f'log-likelihood: {l1}')
         else:
             pass
-        u1 = multi_fixv(T, K, v, n, W, utr = u,detail=detail)
-        v1 = multi_fixu(T, K, u, d, vtr=v.copy(),detail=detail)
+        u1 = multi_fixv(T, K, v, n, W, utr = u,E=Eu,detail=detail)
+        v1 = multi_fixu(T, K, u, d, vtr=v.copy(),E=Ev,detail=detail)
         u = u1
         v = v1
         l2 = multi_likelihood(T, K, u, v)
         error = l2 - l1
         l1 = l2
         i += 1
-    u = multi_fixv(T, K, v, n, W, utr = u)
+    u = multi_fixv(T, K, v, n, W,E=Eu, utr = u)
     if P:
         pass
     else:
-        v = multi_fixu(T, K, u, d, vtr=v.copy())
+        v = multi_fixu(T, K, u, d, E=Ev,vtr=v.copy())
     return u, v
 
 ##
@@ -214,7 +215,7 @@ def pair_updata_R(R,T,K,v):
     R_new /= np.sum(R_new)
     return R_new
 
-def pair_fixv(T,K,v,n, E = 1e-6 , I = 1000, utr = None,detail = False):
+def pair_fixv(T,K,v,n, E = 1e-6 , I = 50, utr = None,detail = False):
     if utr is None:
         R = np.ones(n)/n
     else:
@@ -263,7 +264,8 @@ def pair_fixu(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
         pass
     return v
 
-def pair_alternative(T,K,n,d=None, u = None ,v = None,P = False,E = 1e-6,detail = False):
+def pair_alternative(T,K,n,d=None, u = None ,v = None,P = False,
+                     E = 1e-6,Eu=1e-4,Ev=1e-8,detail = False):
     KK = np.array([k[0] - k[1] for k in K])
     if d is None:
         d = KK.shape[-1]
@@ -289,8 +291,8 @@ def pair_alternative(T,K,n,d=None, u = None ,v = None,P = False,E = 1e-6,detail 
             print(f'log-likelihood: {l1}')
         else:
             pass
-        u1 = pair_fixv(T, KK, v, n, utr = u,detail=detail)
-        v1 = pair_fixu(T, KK, u1, d, vtr = v.copy(),detail=detail)
+        u1 = pair_fixv(T, KK, v, n, utr = u,E=Eu,detail=detail)
+        v1 = pair_fixu(T, KK, u1, d, vtr = v.copy(),E=Ev,detail=detail)
         
         u = u1
         v = v1
@@ -298,14 +300,14 @@ def pair_alternative(T,K,n,d=None, u = None ,v = None,P = False,E = 1e-6,detail 
         error = l2 - l1
         l1 = l2
         i += 1
-    u = pair_fixv(T, KK, v, n, utr = u,detail=detail)
+    u = pair_fixv(T, KK, v, n, utr = u,E=Eu,detail=detail)
     return u, v
 
-def AM(T,K,n, d =None, u = None ,v = None,P = False,E = 1e-3,detail = False,type = 'multi'):
+def AM(T,K,n, d =None, u = None ,v = None,P = False,E = 1e-3,Eu=1e-4,Ev=1e-8,detail = False,type = 'multi'):
     if type == 'multi':
-        u, v= multi_alternative(T,K,n,d, u = u ,v = v,P = P,E = E,detail = detail)
+        u, v= multi_alternative(T,K,n,d, u = u ,v = v,P = P,E = E,Eu=Eu,Ev=Ev,detail = detail)
     elif type == 'pair':
-        u, v= pair_alternative(T,K,n,d, u = u ,v = v,P = P,E = E,detail = detail)
+        u, v= pair_alternative(T,K,n,d, u = u ,v = v,P = P,E = E,Eu=Eu,Ev=Ev,detail = detail)
     else:
         print('please choose \'multi\' or \'pair\'')
     return u,v
