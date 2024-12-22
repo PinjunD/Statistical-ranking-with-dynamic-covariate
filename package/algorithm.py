@@ -174,7 +174,7 @@ def multi_alternative(T,K,n, d = None, u = None ,v = None,P = False,
         else:
             pass
         u1 = multi_fixv(T, K, v, n, W, utr = u,I=I,E=Eu,detail=detail)
-        v1 = multi_fixu(T, K, u, d, vtr=v.copy(),E=Ev,detail=detail)
+        v1 = multi_fixu(T, K, u, d, vtr=v.copy(),E=Ev,I=I,detail=detail)
         u = u1
         v = v1
         l2 = multi_likelihood(T, K, u, v)
@@ -215,7 +215,8 @@ def pair_updata_R(R,T,K,v):
     R_new /= np.sum(R_new)
     return R_new
 
-def pair_fixv(T,K,v,n, E = 1e-6 , I = 50, utr = None,detail = False):
+def pair_fixv(T,K,v,n, E = 1e-6 , I = 1000, utr = None,detail = False):
+    print(I)
     if utr is None:
         R = np.ones(n)/n
     else:
@@ -230,6 +231,7 @@ def pair_fixv(T,K,v,n, E = 1e-6 , I = 50, utr = None,detail = False):
         i += 1
     u = np.log(R_new)
     u = u - np.mean(u)
+    print(error)
     if detail:
         print(f'u iterative times: {i}')
     else:
@@ -293,7 +295,7 @@ def pair_alternative(T,K,n,d=None, u = None ,v = None,P = False,
         else:
             pass
         u1 = pair_fixv(T, KK, v, n, utr = u,E=Eu,I=I,detail=detail)
-        v1 = pair_fixu(T, KK, u1, d, vtr = v.copy(),E=Ev,detail=detail)
+        v1 = pair_fixu(T, KK, u1, d, vtr = v.copy(),E=Ev,I=I,detail=detail)
         
         u = u1
         v = v1
@@ -301,8 +303,8 @@ def pair_alternative(T,K,n,d=None, u = None ,v = None,P = False,
         error = l2 - l1
         l1 = l2
         i += 1
-        I += 10*i
-    u = pair_fixv(T, KK, v, n, utr = u,E=Eu,I=1000,detail=detail)
+        I += 10
+    u = pair_fixv(T, KK, v, n, utr = u,E=Eu,detail=detail)
     return u, v
 
 def AM(T,K,n, d =None, u = None ,v = None,P = False,E = 1e-3,Eu=1e-4,Ev=1e-8,detail = False,type = 'multi',I=50):
