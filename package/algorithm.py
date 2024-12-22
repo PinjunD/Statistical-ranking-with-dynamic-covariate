@@ -25,7 +25,6 @@ def multi_likelihood_one(T,K,u,v = None):
         R = np.exp(u[t] + K[i] @ v)
         tem = R[0] / sum(R)
         result += np.log(tem)
-    print(N)
     return result/N
 
 ##
@@ -47,13 +46,11 @@ def multi_likelihood(T,K,u,v = None):
 def multi_Win(T,n):
     W = np.zeros((n))
     for i, t in enumerate(T):
-        #print("s:",t[:-1])
         W[t[:-1]] += 1
     return W
 def multi_DynamicScore_Win(K,v):
     D_r = []
     for k in K:
-        #print("s:",t[:-1])
         tem = np.exp(k@v)
         tem = tem/sum(tem)
         D_r.append(tem)
@@ -79,10 +76,8 @@ def multi_fixv(T,K,v,n,W, E = 1e-6 , I = 50, utr = None, detail = False):
     i, error = 1, 1
     while error > E and i < I:
         R_new = multi_updata_R(R,W,D,T,n)
-        #updata = np.log(R_new / R)
         updata = R_new - R
         error = max(abs((updata)))
-        #print(error)
         R = R_new
         i += 1
     if detail:
@@ -116,22 +111,13 @@ def multi_fixu(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
         v = vtr[:]
         pass
     i, error = 1, 1
-    l0 = multi_likelihood(T, K, u, v)
     while error > E*1000 and i < I:
         v_updata = multi_updata_v(v,u,T,K,d)
-        #print(v_updata)
         v = v + v_updata
         if d == 1:
             error = abs(v_updata)
         else:
             error = max(abs(v_updata))
-        #print(error)
-        l1 = multi_likelihood(T, K, u, v)
-        """if l1>=l0:
-            print(f'True:{l1}')
-        else:
-            print(f'False:{l1-l0}')"""
-        l0 = l1
         i += 1
     if detail:
         print(f'v iterative times: {i} and v = {v}')
@@ -140,53 +126,7 @@ def multi_fixu(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
 
     return v
 
-def multi_alternative(T,K,n, d = None, u = None ,v = None,P = False,
-                      E = 1e-6,Eu=1e-4,Ev=1e-8,I=50,detail = False):
-    if n is None:
-        node = list(set(sum(T, [])))
-        n = len(node)
-        T = [[node.index(e) for e in t] for t in T]
-    else:
-        pass
-    if d is None:
-        d = len(K[0].T)
-    else:
-        pass
-    W = multi_Win(T,n)
-    if d == 0 or P:
-        PL = True
-    else:
-        PL = False
-    if v is None or P:
-        v = np.zeros(d)
-    else:
-        pass
-    if u is None:
-        u = np.zeros(n)
-    else:
-        pass
-    l1 = multi_likelihood(T,K,u,v)
-    i, error = 1, 1
-    while error > E and i < 100 and not PL:
-        if detail:
-            print('-'*5+f'{i}'+'-'*5)
-            print(f'log-likelihood: {l1}')
-        else:
-            pass
-        u1 = multi_fixv(T, K, v, n, W, utr = u,I=I,E=Eu,detail=detail)
-        v1 = multi_fixu(T, K, u, d, vtr=v.copy(),E=Ev,I=I,detail=detail)
-        u = u1
-        v = v1
-        l2 = multi_likelihood(T, K, u, v)
-        error = l2 - l1
-        l1 = l2
-        i += 1
-    u = multi_fixv(T, K, v, n, W,E=Eu,I=1000, utr = u)
-    if P:
-        pass
-    else:
-        v = multi_fixu(T, K, u, d, E=Ev,vtr=v.copy())
-    return u, v
+
 
 ##
 
@@ -216,7 +156,6 @@ def pair_updata_R(R,T,K,v):
     return R_new
 
 def pair_fixv(T,K,v,n, E = 1e-6 , I = 1000, utr = None,detail = False):
-    print(I)
     if utr is None:
         R = np.ones(n)/n
     else:
@@ -231,7 +170,6 @@ def pair_fixv(T,K,v,n, E = 1e-6 , I = 1000, utr = None,detail = False):
         i += 1
     u = np.log(R_new)
     u = u - np.mean(u)
-    print(error)
     if detail:
         print(f'u iterative times: {i}')
     else:
@@ -266,6 +204,17 @@ def pair_fixu(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
         pass
     return v
 
+
+
+def AM(T,K,n, d =None, u = None ,v = None,P = False,E = 1e-3,Eu=1e-4,Ev=1e-8,detail = False,type = 'multi',I=50):
+    if type == 'multi':
+        u, v= multi_alternative(T,K,n,d, u = u ,v = v,P = P,E = E,Eu=Eu,Ev=Ev,I=I,detail = detail)
+    elif type == 'pair':
+        u, v= pair_alternative(T,K,n,d, u = u ,v = v,P = P,E = E,Eu=Eu,Ev=Ev,I=I,detail = detail)
+    else:
+        print('please choose \'multi\' or \'pair\'')
+    return u,v
+
 def pair_alternative(T,K,n,d=None, u = None ,v = None,P = False,
                      E = 1e-6,Eu=1e-4,Ev=1e-8,I = 50,detail = False):
     KK = np.array([k[0] - k[1] for k in K])
@@ -294,8 +243,8 @@ def pair_alternative(T,K,n,d=None, u = None ,v = None,P = False,
             print(f'log-likelihood: {l1}')
         else:
             pass
-        u1 = pair_fixv(T, KK, v, n, utr = u,E=Eu,I=I,detail=detail)
-        v1 = pair_fixu(T, KK, u1, d, vtr = v.copy(),E=Ev,I=I,detail=detail)
+        v1 = pair_fixu(T, KK, u, d, vtr = v.copy(),E=Ev,I=I,detail=detail)
+        u1 = pair_fixv(T, KK, v1, n, utr = u,E=Eu,I=I,detail=detail)
         
         u = u1
         v = v1
@@ -303,16 +252,53 @@ def pair_alternative(T,K,n,d=None, u = None ,v = None,P = False,
         error = l2 - l1
         l1 = l2
         i += 1
-        I += 10
-    u = pair_fixv(T, KK, v, n, utr = u,E=Eu,detail=detail)
+    #u = pair_fixv(T, KK, v, n, utr = u,E=Eu,detail=detail)
     return u, v
 
-def AM(T,K,n, d =None, u = None ,v = None,P = False,E = 1e-3,Eu=1e-4,Ev=1e-8,detail = False,type = 'multi',I=50):
-    if type == 'multi':
-        u, v= multi_alternative(T,K,n,d, u = u ,v = v,P = P,E = E,Eu=Eu,Ev=Ev,I=I,detail = detail)
-    elif type == 'pair':
-        u, v= pair_alternative(T,K,n,d, u = u ,v = v,P = P,E = E,Eu=Eu,Ev=Ev,I=I,detail = detail)
+def multi_alternative(T,K,n, d = None, u = None ,v = None,P = False,
+                      E = 1e-6,Eu=1e-4,Ev=1e-8,I=50,detail = False):
+    if n is None:
+        node = list(set(sum(T, [])))
+        n = len(node)
+        T = [[node.index(e) for e in t] for t in T]
     else:
-        print('please choose \'multi\' or \'pair\'')
-    return u,v
-
+        pass
+    if d is None:
+        d = len(K[0].T)
+    else:
+        pass
+    W = multi_Win(T,n)
+    if d == 0 or P:
+        PL = True
+    else:
+        PL = False
+    if v is None or P:
+        v = np.zeros(d)
+    else:
+        pass
+    if u is None:
+        u = np.zeros(n)
+    else:
+        pass
+    l1 = multi_likelihood(T,K,u,v)
+    i, error = 1, 1
+    while error > E and i < 100 and not PL:
+        if detail:
+            print('-'*5+f'{i}'+'-'*5)
+            print(f'log-likelihood: {l1}')
+        else:
+            pass
+        v1 = multi_fixu(T, K, u, d, vtr=v.copy(),E=Ev,I=I,detail=detail)
+        u1 = multi_fixv(T, K, v1, n, W, utr = u,I=I,E=Eu,detail=detail)
+        u = u1
+        v = v1
+        l2 = multi_likelihood(T, K, u, v)
+        error = l2 - l1
+        l1 = l2
+        i += 1
+    u = multi_fixv(T, K, v, n, W,E=Eu,I=1000, utr = u)
+    if P:
+        pass
+    else:
+        v = multi_fixu(T, K, u, d, E=Ev,vtr=v.copy())
+    return u, v
