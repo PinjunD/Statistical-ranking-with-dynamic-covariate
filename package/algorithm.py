@@ -77,7 +77,7 @@ def multi_fixv(T,K,v,n,W, E = 1e-6 , I = 50, utr = None, detail = False):
     while error > E and i < I:
         R_new = multi_updata_R(R,W,D,T,n)
         updata = R_new - R
-        error = max(abs((updata)))
+        error = sum(abs((updata)))
         R = R_new
         i += 1
     if detail:
@@ -117,7 +117,7 @@ def multi_fixu(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
         if d == 1:
             error = abs(v_updata)
         else:
-            error = max(abs(v_updata))
+            error = sum(abs(v_updata))
         i += 1
     if detail:
         print(f'v iterative times: {i} and v = {v}')
@@ -165,7 +165,7 @@ def pair_fixv(T,K,v,n, E = 1e-6 , I = 1000, utr = None,detail = False):
         R_new = pair_updata_R(R, T, K, v)
         #updata = np.log(R_new / R)
         updata = R_new - R
-        error = max(abs((updata)))
+        error = sum(abs((updata)))
         R = R_new
         i += 1
     u = np.log(R_new)
@@ -196,7 +196,7 @@ def pair_fixu(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
         if d == 1:
             error = abs(v_updata)
         else:
-            error = max(abs(v_updata))
+            error = sum(abs(v_updata))
         i += 1
     if detail:
         print(f'v iterative times: {i} and v = {v}')
@@ -252,7 +252,7 @@ def pair_alternative(T,K,n,d=None, u = None ,v = None,P = False,
         error = l2 - l1
         l1 = l2
         i += 1
-    #u = pair_fixv(T, KK, v, n, utr = u,E=Eu,detail=detail)
+    u = pair_fixv(T, KK, v, n, utr = u,E=Eu,detail=detail)
     return u, v
 
 def multi_alternative(T,K,n, d = None, u = None ,v = None,P = False,
