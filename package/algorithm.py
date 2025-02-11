@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.stats import chi2
 def multi_likelihood_three(T,K,u,v = None):
     if len(v) == 0 or v is None:
         d = len(K[0].T)
@@ -143,6 +144,49 @@ def pair_likelihood(T,K,u,v = None):
         tem = R[0] / sum(R)
         result += np.log(tem)
     return result/N
+
+def pair_hingeloss(T,K,u,v = None):
+    if len(v) == 0 or v is None:
+        d = len(K[0].T)
+        v = np.zeros(d)
+    else:
+        pass
+    N = len(T)
+    result = 0
+    for i, t in enumerate(T):
+        R = np.exp(u[t] + K[i] @ v)
+        tem = R[0] / sum(R)
+        result += 1 - tem
+    return result/N
+def pair_logcoshloss(T,K,u,v = None):
+    if len(v) == 0 or v is None:
+        d = len(K[0].T)
+        v = np.zeros(d)
+    else:
+        pass
+    N = len(T)
+    result = 0
+    for i, t in enumerate(T):
+        R = np.exp(u[t] + K[i] @ v)
+        tem = R[0] / sum(R)
+        tem = np.log(np.cosh(1-tem))
+        result += tem
+    return result/N
+def pair_false_prediction_rate(T,K,u,v = None):
+    if len(v) == 0 or v is None:
+        d = len(K[0].T)
+        v = np.zeros(d)
+    else:
+        pass
+    N = len(T)
+    result = 0
+    for i, t in enumerate(T):
+        R = np.exp(u[t] + K[i] @ v)
+        tem = R[0] / sum(R)
+        tem = tem<=0.5
+        result += tem
+    return result/N
+
 def pair_updata_R(R,T,K,v):
     M = np.zeros_like(R)
     W = np.zeros_like(R)
@@ -206,17 +250,17 @@ def pair_fixu(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
 
 
 
-def AM(T,K,n, d =None, u = None ,v = None,P = False,E = 1e-3,Eu=1e-4,Ev=1e-8,detail = False,type = 'multi',I=50):
+def AM(T,K,n, d =None, u = None ,v = None,P = False,E = 1e-3,Eu=1e-4,Ev=1e-8,detail = False,type = 'multi',I=50,save = False):
     if type == 'multi':
-        u, v= multi_alternative(T,K,n,d, u = u ,v = v,P = P,E = E,Eu=Eu,Ev=Ev,I=I,detail = detail)
+        u, v= multi_alternative(T,K,n,d, u = u ,v = v,P = P,E = E,Eu=Eu,Ev=Ev,I=I,detail = detail,save = save)
     elif type == 'pair':
-        u, v= pair_alternative(T,K,n,d, u = u ,v = v,P = P,E = E,Eu=Eu,Ev=Ev,I=I,detail = detail)
+        u, v= pair_alternative(T,K,n,d, u = u ,v = v,P = P,E = E,Eu=Eu,Ev=Ev,I=I,detail = detail,save = save)
     else:
         print('please choose \'multi\' or \'pair\'')
     return u,v
 
 def pair_alternative(T,K,n,d=None, u = None ,v = None,P = False,
-                     E = 1e-6,Eu=1e-4,Ev=1e-8,I = 50,detail = False):
+                     E = 1e-6,Eu=1e-4,Ev=1e-8,I = 50,detail = False,save = False):
     KK = np.array([k[0] - k[1] for k in K])
     if d is None:
         d = KK.shape[-1]
@@ -236,27 +280,49 @@ def pair_alternative(T,K,n,d=None, u = None ,v = None,P = False,
         pass
     l1 = pair_likelihood(T,K,u,v)
     i, error = 1, 1
-    while error > E and i < 100 and not PL:
-        
-        if detail:
-            print('-'*5+f'{i}'+'-'*5)
-            print(f'log-likelihood: {l1}')
-        else:
-            pass
-        v1 = pair_fixu(T, KK, u, d, vtr = v.copy(),E=Ev,I=I,detail=detail)
-        u1 = pair_fixv(T, KK, v1, n, utr = u,E=Eu,I=I,detail=detail)
-        
-        u = u1
-        v = v1
-        l2 = pair_likelihood(T, K, u, v)
-        error = l2 - l1
-        l1 = l2
-        i += 1
-    u = pair_fixv(T, KK, v, n, utr = u,E=Eu,detail=detail)
-    return u, v
+    if save:
+        U = [u]
+        V = [v]
+        while error > E and i < 100 and not PL:
+            if detail:
+                print('-'*5+f'{i}'+'-'*5)
+                print(f'log-likelihood: {l1}')
+            else:
+                pass
+            v1 = pair_fixu(T, KK, u, d, vtr = v.copy(),E=Ev,I=I,detail=detail)
+            u1 = pair_fixv(T, KK, v1, n, utr = u,E=Eu,I=I,detail=detail)
+            
+            u = u1
+            v = v1
+            U.append(u)
+            V.append(v)
+            l2 = pair_likelihood(T, K, u, v)
+            error = l2 - l1
+            l1 = l2
+            i += 1
+        u = pair_fixv(T, KK, v, n, utr = u,E=Eu,detail=detail)
+        return U, V
+    else:
+        while error > E and i < 100 and not PL:
+            if detail:
+                print('-'*5+f'{i}'+'-'*5)
+                print(f'log-likelihood: {l1}')
+            else:
+                pass
+            v1 = pair_fixu(T, KK, u, d, vtr = v.copy(),E=Ev,I=I,detail=detail)
+            u1 = pair_fixv(T, KK, v1, n, utr = u,E=Eu,I=I,detail=detail)
+            
+            u = u1
+            v = v1
+            l2 = pair_likelihood(T, K, u, v)
+            error = l2 - l1
+            l1 = l2
+            i += 1
+        u = pair_fixv(T, KK, v, n, utr = u,E=Eu,detail=detail)
+        return u, v
 
 def multi_alternative(T,K,n, d = None, u = None ,v = None,P = False,
-                      E = 1e-6,Eu=1e-4,Ev=1e-8,I=50,detail = False):
+                      E = 1e-6,Eu=1e-4,Ev=1e-8,I=50,detail = False,save = False):
     if n is None:
         node = list(set(sum(T, [])))
         n = len(node)
@@ -282,23 +348,164 @@ def multi_alternative(T,K,n, d = None, u = None ,v = None,P = False,
         pass
     l1 = multi_likelihood(T,K,u,v)
     i, error = 1, 1
-    while error > E and i < 100 and not PL:
-        if detail:
-            print('-'*5+f'{i}'+'-'*5)
-            print(f'log-likelihood: {l1}')
-        else:
+    if save:
+        U = [u]
+        V = [v]
+        while error > E and i < 100 and not PL:
+            if detail:
+                print('-'*5+f'{i}'+'-'*5)
+                print(f'log-likelihood: {l1}')
+            else:
+                pass
+            v1 = multi_fixu(T, K, u, d, vtr=v.copy(),E=Ev,I=I,detail=detail)
+            u1 = multi_fixv(T, K, v1, n, W, utr = u,I=I,E=Eu,detail=detail)
+            u = u1
+            v = v1
+            U.append(u)
+            V.append(v)
+            l2 = multi_likelihood(T, K, u, v)
+            error = l2 - l1
+            l1 = l2
+            i += 1
+        u = multi_fixv(T, K, v, n, W,E=Eu,I=1000, utr = u)
+        if P:
             pass
-        v1 = multi_fixu(T, K, u, d, vtr=v.copy(),E=Ev,I=I,detail=detail)
-        u1 = multi_fixv(T, K, v1, n, W, utr = u,I=I,E=Eu,detail=detail)
-        u = u1
-        v = v1
-        l2 = multi_likelihood(T, K, u, v)
-        error = l2 - l1
-        l1 = l2
-        i += 1
-    u = multi_fixv(T, K, v, n, W,E=Eu,I=1000, utr = u)
-    if P:
-        pass
+        else:
+            v = multi_fixu(T, K, u, d, E=Ev,vtr=v.copy())
+        return U, V
     else:
-        v = multi_fixu(T, K, u, d, E=Ev,vtr=v.copy())
-    return u, v
+        while error > E and i < 100 and not PL:
+            if detail:
+                print('-'*5+f'{i}'+'-'*5)
+                print(f'log-likelihood: {l1}')
+            else:
+                pass
+            v1 = multi_fixu(T, K, u, d, vtr=v.copy(),E=Ev,I=I,detail=detail)
+            u1 = multi_fixv(T, K, v1, n, W, utr = u,I=I,E=Eu,detail=detail)
+            u = u1
+            v = v1
+            l2 = multi_likelihood(T, K, u, v)
+            error = l2 - l1
+            l1 = l2
+            i += 1
+        u = multi_fixv(T, K, v, n, W,E=Eu,I=1000, utr = u)
+        if P:
+            pass
+        else:
+            v = multi_fixu(T, K, u, d, E=Ev,vtr=v.copy())
+        return u, v
+
+
+
+###
+def pair_covariate_coeffecient(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
+    KK = np.array([k[0] - k[1] for k in K])
+    if vtr is None:
+        v = np.zeros(d)
+    else:
+        v = vtr[:]
+        pass
+    i, error = 1, 1
+    while error > E and i < I:
+        v_updata = pair_updata_v(v, u, T, KK)
+        v = v + v_updata
+        if d == 1:
+            error = abs(v_updata)
+        else:
+            error = sum(abs(v_updata))
+        i += 1
+    if detail:
+        print(f'v iterative times: {i} and v = {v}')
+    else:
+        pass
+    return v
+
+
+
+def Newton_pair(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
+    K = np.array([k[0] - k[1] for k in K])
+    if vtr is None:
+        v = np.zeros(d)
+    else:
+        v = vtr[:]
+        pass
+    i, error = 1, 1
+    V = [v]
+    while error > E and i < I:
+        v_updata = pair_updata_v(v, u, T, K)
+        v = v + v_updata
+        V.append(v)
+        if d == 1:
+            error = abs(v_updata)
+        else:
+            error = sum(abs(v_updata))
+        i += 1
+    if detail:
+        print(f'v iterative times: {i} and v = {v}')
+    else:
+        pass
+    return V
+
+def MM_pair(T,K,v,n, E = 1e-6 , I = 1000, utr = None,detail = False):
+    K = np.array([k[0] - k[1] for k in K])
+    if utr is None:
+        R = np.ones(n)/n
+    else:
+        R = np.exp(utr)/sum(np.exp(utr))
+    i, error = 1, 1
+    u = np.log(R)
+    u = u - np.mean(u)
+    U = [u]
+    while error > E and i < I:
+        R_new = pair_updata_R(R, T, K, v)
+        #updata = np.log(R_new / R)
+        updata = R_new - R
+        error = sum(abs((updata)))
+        R = R_new
+        i += 1
+        u = np.log(R)
+        u = u - np.mean(u)
+        U.append(u)
+    if detail:
+        print(f'u iterative times: {i}')
+    else:
+        pass
+    return U
+
+
+def test_score(T,X,n,d,alpha=0.05,num = 100):
+    u_test = np.zeros(n)
+    v_test = pair_covariate_coeffecient(T,X,u_test,d)
+    score = np.exp(X@v_test)
+    p = score[:,0]/(score[:,0]+score[:,1])
+    p = np.sort(p)
+    p_one = p[p<0.5]
+    p_zero = p[p>0.5]
+    total_num = len(p_one)
+    
+    folders = [[num*i,num*(i+1)] for i in range(int(total_num/num))]
+    folders[-1][-1] =total_num-1
+    H = 0
+    for folder in folders:
+        interval = 1-p_one[folder]
+        temp = (p_zero >= interval[-1]) & (p_zero <= interval[0])
+        count_0 = np.sum(temp)
+        count_1 = num
+        tot = count_0 + count_1
+
+        p_0 = p_zero[temp]
+        p_1 = p_one[folder[0]:folder[1]]
+        pp = np.mean(np.concatenate((p_0, p_1), axis=0))
+        expected_count_1 = tot*pp
+        expected_npq = tot**pp*(1-pp)
+        H += (expected_count_1-count_1)**2/expected_npq
+    dof = len(folders) - d
+    quantile_lower = chi2.ppf(alpha/2, dof)
+    quantile_upper = chi2.ppf(1-alpha/2, dof)
+    print(f"lower:{quantile_lower}")
+    print(f"upper:{quantile_upper}")
+    print(f"H:{H}")
+    if H>quantile_upper or H<quantile_lower:
+        print("reject the hypothesis.")
+    else:
+        print("Accept the hypothesis.")
