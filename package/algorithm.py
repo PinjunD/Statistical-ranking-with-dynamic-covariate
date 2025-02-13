@@ -472,10 +472,155 @@ def MM_pair(T,K,v,n, E = 1e-6 , I = 1000, utr = None,detail = False):
         pass
     return U
 
-
-def test_score(T,X,n,d,alpha=0.05,num = 100):
+def test_statistic(T,X,n,d,num=10):
     u_test = np.zeros(n)
     v_test = pair_covariate_coeffecient(T,X,u_test,d)
+    score = np.exp(X@v_test)
+    p = score[:,0]/(score[:,0]+score[:,1])
+    M = max(abs(p-0.5))
+    pp = (p<0.5)
+
+    h = M/num
+    p_right = 0.5
+    R = []
+
+    for _ in range(num):
+        p_left = p_right-h
+        p_mean = (p_left+p_right)/2
+        k1 = len(pp[(p >= p_left) & (p < p_right)])
+        k2 = len(pp[(p <= 1-p_left) & (p > 1-p_right)])
+        k = k1+k2
+        if k>0:
+            r = (k1-k*p_mean)/np.sqrt(k*p_mean*(1-p_mean))  
+            R.append(r)
+        else:
+            pass
+        p_right -= h
+    chi2 = sum(np.array(R)**2)
+    return chi2,len(R)
+###CV
+def tennis_cross_validation(T,cov,n,subset,data_path,CV_name):
+    N = len(T)
+    Ttrain = [T[i] for i in range(N) if i not in subset]
+    Xtrain = [cov[i] for i in range(N) if i not in subset]
+    Ttest = [T[i] for i in range(N) if i in subset]
+    Xtest = [cov[i] for i in range(N) if i in subset]
+    u_pl,v_pl = AM(Ttrain,Xtrain,n,P=True,Eu=1e-5,type = 'pair')
+    if np.isnan(u_pl).any():
+        pass
+    else:
+        u_plusDC,v_plusDC = AM(Ttrain,Xtrain,n,
+                                    E=1e-5,Eu=1e-5,Ev=1e-12,
+                                    I=52,type = 'pair')
+        cross_entropy_pl = pair_likelihood(Ttest,Xtest,u_pl,v_pl)
+        cross_entropy_plusDC = pair_likelihood(Ttest,Xtest,u_plusDC,v_plusDC)
+        hinge_loss_pl = pair_hingeloss(Ttest,Xtest,u_pl,v_pl)
+        hinge_loss_plusDC = pair_hingeloss(Ttest,Xtest,u_plusDC,v_plusDC)
+        logcosh_loss_pl = pair_logcoshloss(Ttest,Xtest,u_pl,v_pl)
+        logcosh_loss_plusDC = pair_logcoshloss(Ttest,Xtest,u_plusDC,v_plusDC)
+        false_prediction_rate_pl = pair_false_prediction_rate(Ttest,Xtest,u_pl,v_pl)
+        false_prediction_rate_plusDC = pair_false_prediction_rate(Ttest,Xtest,u_plusDC,v_plusDC)
+
+
+        #with open(data_path+"CV_filename",'a') as f:
+        with open(data_path+CV_name['Cross entropy'],'a') as f:
+            f.write(str(cross_entropy_pl))
+            f.write(';')
+            f.write(str(cross_entropy_plusDC))
+            f.write('\n')
+        with open(data_path+CV_name['Hinge loss'],'a') as f:
+            f.write(str(hinge_loss_pl))
+            f.write(';')
+            f.write(str(hinge_loss_plusDC))
+            f.write('\n')
+        with open(data_path+CV_name['Logcosh loss'],'a') as f:
+            f.write(str(logcosh_loss_pl))
+            f.write(';')
+            f.write(str(logcosh_loss_plusDC))
+            f.write('\n')
+        with open(data_path+CV_name['False prediction rate'],'a') as f:
+            f.write(str(false_prediction_rate_pl))
+            f.write(';')
+            f.write(str(false_prediction_rate_plusDC))
+            f.write('\n')
+def horse_cross_validation(T,cov,n,subset,data_path,CV_filename):
+    N = len(T)
+    Ttrain = [T[i] for i in range(N) if i not in subset]
+    Xtrain = [cov[i] for i in range(N) if i not in subset]
+    Ttest = [T[i] for i in range(N) if i in subset]
+    Xtest = [cov[i] for i in range(N) if i in subset]
+
+
+    u_pl,v_pl = AM(Ttrain,Xtrain,n,P=True,Eu=1e-5,detail=True)
+    u_plusDC,v_plusDC = AM(Ttrain,Xtrain,n,
+                                 E=1e-5,Eu=1e-5,Ev=1e-12,
+                                 I=52)
+    
+    full_likelihood_pl = multi_likelihood(Ttest,Xtest,u_pl,v_pl)
+    top_likelihood_pl = multi_likelihood_one(Ttest,Xtest,u_pl,v_pl)
+    three_likelihood_pl = multi_likelihood_three(Ttest,Xtest,u_pl,v_pl)
+    likelihood_pl = [full_likelihood_pl,top_likelihood_pl,three_likelihood_pl]
+
+    full_likelihood_plusDC = multi_likelihood(Ttest,Xtest,u_plusDC,v_plusDC)
+    top_likelihood_plusDC = multi_likelihood_one(Ttest,Xtest,u_plusDC,v_plusDC)
+    three_likelihood_plusDC = multi_likelihood_three(Ttest,Xtest,u_plusDC,v_plusDC)
+    likelihood_plusDC = [full_likelihood_plusDC,top_likelihood_plusDC,three_likelihood_plusDC]
+
+    ### belief
+    NN = len(Xtest)
+    full_belief,top_belief,three_belief = 0, 0, 0
+    for xx in Xtest:
+        b = np.exp(xx[:, -1])
+        full_belief += sum([np.log(b[j] / sum(b[j:])) for j in range(len(b))])
+        top_belief += np.log(b[0] / sum(b))
+        three_belief += sum([np.log(b[j] / sum(b[j:])) for j in range(3)])
+    full_belief /= NN
+    top_belief /= NN
+    three_belief /= NN
+    belief = [full_belief,top_belief,three_belief]
+
+    results = {'plusDC':likelihood_plusDC,
+               'pl':likelihood_pl,
+               'belief':belief}
+
+    with open(data_path+CV_filename,'a') as f:
+        for values in results.values():
+            for value in values:
+                f.write(str(value)+',')
+            f.write(';')
+        f.write('\n')
+"""def test_score(T,X,n,d):
+    u_test = np.zeros(n)
+    v_test = pair_covariate_coeffecient(T,X,u_test,d)
+    score = np.exp(X@v_test)
+    p = score[:,0]/(score[:,0]+score[:,1])
+    p = np.sort(p)
+    p_one = p[p<0.5]
+    p_zero = p[p>0.5]
+    d = sum(p_zero-1)+sum(1-p_one)
+    m = np.sqrt(sum(p*(1-p)))
+    x = d/m 
+    #p = norm.cdf(x, loc=0, scale=1)
+    return x
+def test_score(T,X,n,d):
+    N = len(T)
+    u_test = np.zeros(n)
+    v_test = pair_covariate_coeffecient(T,X,u_test,d)
+    score = np.exp(H.X@v_test)
+    p = score[:,0]/(score[:,0]+score[:,1])
+    pp = np.random.binomial(1,[0.5]*len(p))
+    p[pp==0] = 1 - p[pp==0]
+    index = p.argsort()
+    p = p[index]
+    pp = pp[index]
+    num = 30
+    PP = [pp[i:i + num] for i in range(0, N, num)]
+    P = [p[i:i + num] for i in range(0, N, num)]
+    gamma = [np.linalg.norm(p_-pp_)**2/sum(p_*(1-p_)) for p_,pp_ in zip(P,PP)]
+    return sum(gamma), N/num"""
+"""def test2(T,X,n,d,alpha=0.05,num = 10):
+    u_test = np.zeros(n)
+    v_test = algorithm.pair_covariate_coeffecient(T,X,u_test,d)
     score = np.exp(X@v_test)
     p = score[:,0]/(score[:,0]+score[:,1])
     p = np.sort(p)
@@ -488,24 +633,49 @@ def test_score(T,X,n,d,alpha=0.05,num = 100):
     H = 0
     for folder in folders:
         interval = 1-p_one[folder]
-        temp = (p_zero >= interval[-1]) & (p_zero <= interval[0])
-        count_0 = np.sum(temp)
-        count_1 = num
-        tot = count_0 + count_1
-
-        p_0 = p_zero[temp]
+        p_0 = p_zero[(p_zero >= interval[-1]) & (p_zero <= interval[0])]
         p_1 = p_one[folder[0]:folder[1]]
-        pp = np.mean(np.concatenate((p_0, p_1), axis=0))
-        expected_count_1 = tot*pp
-        expected_npq = tot**pp*(1-pp)
-        H += (expected_count_1-count_1)**2/expected_npq
+        pp = np.concatenate((1-p_0, p_1), axis=0)
+        expected_npq = sum(pp*(1-pp))
+        r = (sum(pp)-len(p_1))**2/expected_npq
+        H += r
     dof = len(folders) - d
     quantile_lower = chi2.ppf(alpha/2, dof)
     quantile_upper = chi2.ppf(1-alpha/2, dof)
     print(f"lower:{quantile_lower}")
     print(f"upper:{quantile_upper}")
     print(f"H:{H}")
-    if H>quantile_upper or H<quantile_lower:
-        print("reject the hypothesis.")
-    else:
-        print("Accept the hypothesis.")
+    return H"""
+
+"""def test_score(T,X,n,d):
+    u_test = np.zeros(n)
+    v_test = pair_covariate_coeffecient(T,X,u_test,d)
+    score = np.exp(X@v_test)
+    p = score[:,0]/(score[:,0]+score[:,1])
+    pp = 2*np.random.binomial(1,[0.5]*len(p))-1
+    d = sum((1-p)*pp)
+    m = np.sqrt(sum(p*(1-p)))
+    x = d/m 
+    #p = norm.cdf(x, loc=0, scale=1)
+    return x"""
+
+"""def test_score2(T,X,n,d,num = 30):
+    N = len(T)
+    u_test = np.zeros(n)
+    v_test = pair_covariate_coeffecient(T,X,u_test,d)
+    score = np.exp(X@v_test)
+    p = score[:,0]/(score[:,0]+score[:,1])
+    pp = np.random.binomial(1,[0.5]*len(p))
+    p[pp==0] = 1 - p[pp==0]
+    index = p.argsort()
+    p = p[index]
+    pp = pp[index]
+    PP = [pp[i:i + num] for i in range(0, N, num)]
+    P = [p[i:i + num] for i in range(0, N, num)]
+    gamma = [np.linalg.norm(p_-pp_)**2/sum(p_*(1-p_)) for p_,pp_ in zip(P,PP)]
+    return sum(gamma)
+def test_pvalue(n,N,v,d,test_score = test_score2,u_generator = lambda n: np.zeros(n)):
+    H = generator.MultipleComparison(n,N,v,u_generator=u_generator)
+    T,X = H.T,H.X
+    p = test_score(T,X,n,d)
+    return p"""

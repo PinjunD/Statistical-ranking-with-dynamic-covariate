@@ -21,7 +21,7 @@ class MultipleComparison:
         self.get_community()
         self.get_edges()
         print(f'complete get edges: Num_Edges={len(self.T)}, '
-              f'Num_Nodes = {n},m_lower = {m_lower},m_upper = {m_upper-1}')
+              f'Num_Nodes = {n},m_lower = {m_lower},m_upper = {m_upper}')
     def get_community(self):
         if self.type == 'HSBM':
             self.n1 = int(self.n/3)
@@ -66,6 +66,20 @@ class MultipleComparison:
         else:
             e = None
         return e
+    def Recomparison(self):
+        T_new = []
+        X_new = []
+        for T,X in zip(self.T,self.X):
+            latent_score = self.u[T]
+            R = np.exp(latent_score + X@self.v)
+            o = order(R)
+            new_edge = [x for _, x in sorted(zip(o, T))]
+            new_X = np.array([x for _, x in sorted(zip(o, X))])
+            T_new.append(new_edge)
+            X_new.append(new_X)
+        self.T = T_new
+        self.X = X_new
+
     
 if __name__ == '__main__':
     n = 200
