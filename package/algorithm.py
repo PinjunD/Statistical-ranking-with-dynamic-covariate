@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.stats import chi2
 def multi_likelihood_three(T,K,u,v = None):
     if len(v) == 0 or v is None:
         d = len(K[0].T)
@@ -497,7 +496,35 @@ def test_statistic(T,X,n,d,num=10):
             pass
         p_right -= h
     chi2 = sum(np.array(R)**2)
-    return chi2,len(R)
+    return chi2,len(R) - 1
+    
+def test_statistic_multi(T,X,n,d,num=10):
+    
+    u_test = np.zeros(n)
+    v_test = multi_fixu(T,X,u_test,d)
+    X = np.array([x[np.sort(np.random.choice(len(x),2))]
+                   for x in X])
+    score = np.exp(X@v_test)
+    p = score[:,0]/(score[:,0]+score[:,1])
+    M = max(abs(p-0.5))
+    pp = (p<0.5)
+    h = M/num
+    p_right = 0.5
+    R = []
+    for _ in range(num):
+        p_left = p_right-h
+        p_mean = (p_left+p_right)/2
+        k1 = len(pp[(p >= p_left) & (p < p_right)])
+        k2 = len(pp[(p <= 1-p_left) & (p > 1-p_right)])
+        k = k1+k2
+        if k>0:
+            r = (k1-k*p_mean)/np.sqrt(k*p_mean*(1-p_mean))  
+            R.append(r)
+        else:
+            pass
+        p_right -= h
+    chi2 = sum(np.array(R)**2)
+    return chi2,len(R) - 1 
 ###CV
 def tennis_cross_validation(T,cov,n,subset,data_path,CV_name):
     N = len(T)
@@ -589,38 +616,26 @@ def horse_cross_validation(T,cov,n,subset,data_path,CV_filename):
                 f.write(str(value)+',')
             f.write(';')
         f.write('\n')
-"""def test_score(T,X,n,d):
-    u_test = np.zeros(n)
-    v_test = pair_covariate_coeffecient(T,X,u_test,d)
-    score = np.exp(X@v_test)
-    p = score[:,0]/(score[:,0]+score[:,1])
-    p = np.sort(p)
-    p_one = p[p<0.5]
-    p_zero = p[p>0.5]
-    d = sum(p_zero-1)+sum(1-p_one)
-    m = np.sqrt(sum(p*(1-p)))
-    x = d/m 
-    #p = norm.cdf(x, loc=0, scale=1)
-    return x
-def test_score(T,X,n,d):
+
+def test_score(T,X,n,d,num = 30):
     N = len(T)
     u_test = np.zeros(n)
     v_test = pair_covariate_coeffecient(T,X,u_test,d)
-    score = np.exp(H.X@v_test)
+    score = np.exp(X@v_test)
     p = score[:,0]/(score[:,0]+score[:,1])
     pp = np.random.binomial(1,[0.5]*len(p))
     p[pp==0] = 1 - p[pp==0]
     index = p.argsort()
     p = p[index]
     pp = pp[index]
-    num = 30
     PP = [pp[i:i + num] for i in range(0, N, num)]
     P = [p[i:i + num] for i in range(0, N, num)]
     gamma = [np.linalg.norm(p_-pp_)**2/sum(p_*(1-p_)) for p_,pp_ in zip(P,PP)]
-    return sum(gamma), N/num"""
+    return sum(gamma), N/num - 1
+
 """def test2(T,X,n,d,alpha=0.05,num = 10):
     u_test = np.zeros(n)
-    v_test = algorithm.pair_covariate_coeffecient(T,X,u_test,d)
+    v_test = pair_covariate_coeffecient(T,X,u_test,d)
     score = np.exp(X@v_test)
     p = score[:,0]/(score[:,0]+score[:,1])
     p = np.sort(p)
@@ -640,24 +655,8 @@ def test_score(T,X,n,d):
         r = (sum(pp)-len(p_1))**2/expected_npq
         H += r
     dof = len(folders) - d
-    quantile_lower = chi2.ppf(alpha/2, dof)
-    quantile_upper = chi2.ppf(1-alpha/2, dof)
-    print(f"lower:{quantile_lower}")
-    print(f"upper:{quantile_upper}")
-    print(f"H:{H}")
-    return H"""
+    return H, dof"""
 
-"""def test_score(T,X,n,d):
-    u_test = np.zeros(n)
-    v_test = pair_covariate_coeffecient(T,X,u_test,d)
-    score = np.exp(X@v_test)
-    p = score[:,0]/(score[:,0]+score[:,1])
-    pp = 2*np.random.binomial(1,[0.5]*len(p))-1
-    d = sum((1-p)*pp)
-    m = np.sqrt(sum(p*(1-p)))
-    x = d/m 
-    #p = norm.cdf(x, loc=0, scale=1)
-    return x"""
 
 """def test_score2(T,X,n,d,num = 30):
     N = len(T)
@@ -674,8 +673,4 @@ def test_score(T,X,n,d):
     P = [p[i:i + num] for i in range(0, N, num)]
     gamma = [np.linalg.norm(p_-pp_)**2/sum(p_*(1-p_)) for p_,pp_ in zip(P,PP)]
     return sum(gamma)
-def test_pvalue(n,N,v,d,test_score = test_score2,u_generator = lambda n: np.zeros(n)):
-    H = generator.MultipleComparison(n,N,v,u_generator=u_generator)
-    T,X = H.T,H.X
-    p = test_score(T,X,n,d)
-    return p"""
+"""

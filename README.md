@@ -4,13 +4,13 @@ Author: Pinjun Dong, Ruijian Han, Binyan Jiang, Yiming Xu (Authorships are order
 
 ## Documents:
 #### data
-This document contains simulation results, as well as tennis and horse racing data. The tennis data is sourced from [Jeff Sackmann](https://github.com/JeffSackmann/tennis-atp), while the horse racing data is from [Hong Kong horse-racing dataset](https://www.kaggle.com/datasets/gdaley/hkracing).
+This folder contains simulation results, as well as tennis and horse racing data. The tennis data is sourced from [Jeff Sackmann](https://github.com/JeffSackmann/tennis-atp), while the horse racing data is from [Hong Kong horse-racing dataset](https://www.kaggle.com/datasets/gdaley/hkracing).
 
 #### image
-This document includes the figures from the simulation and real data analysis.
+This folder includes the figures from the simulation and real data analysis.
 
 #### package
-This document showcases the algorithm and synthetic data generator introduced in our paper.
+This folder showcases the algorithm and synthetic data generator introduced in our paper.
 ## Files:
 #### illustration.ipynb
 This file introduces a specific example to demonstrate our methods.
