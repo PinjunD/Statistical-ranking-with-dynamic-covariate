@@ -1,4 +1,7 @@
 import numpy as np
+from scipy.stats import chi2
+from sklearn.cluster import KMeans
+
 def multi_likelihood_three(T,K,u,v = None):
     if len(v) == 0 or v is None:
         d = len(K[0].T)
@@ -55,7 +58,7 @@ def multi_DynamicScore_Win(K,v):
         tem = tem/sum(tem)
         D_r.append(tem)
     return D_r
-def multi_updata_R(R,W,D,T,n):
+def multi_update_R(R,W,D,T,n):
     M = np.zeros(n)
     for i, t in enumerate(T):
         d = D[i]
@@ -75,9 +78,9 @@ def multi_fixv(T,K,v,n,W, E = 1e-6 , I = 50, utr = None, detail = False):
         R = np.exp(utr)/sum(np.exp(utr))
     i, error = 1, 1
     while error > E and i < I:
-        R_new = multi_updata_R(R,W,D,T,n)
-        updata = R_new - R
-        error = sum(abs((updata)))
+        R_new = multi_update_R(R,W,D,T,n)
+        update = R_new - R
+        error = sum(abs((update)))
         R = R_new
         i += 1
     if detail:
@@ -88,7 +91,7 @@ def multi_fixv(T,K,v,n,W, E = 1e-6 , I = 50, utr = None, detail = False):
     u = u - np.mean(u)
     return u
 ###############
-def multi_updata_v(v,u,T,K,d):
+def multi_update_v(v,u,T,K,d):
     tem = 0
     H = np.zeros((d,d))
     for i, X in enumerate(K):
@@ -102,8 +105,8 @@ def multi_updata_v(v,u,T,K,d):
             O = np.outer(XX,XX)
             H += D - O
     H = np.linalg.inv(H)
-    updata = H@tem
-    return updata
+    update = H@tem
+    return update
 def multi_fixu(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
     if vtr is None:
         v = np.zeros(d)
@@ -112,12 +115,12 @@ def multi_fixu(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
         pass
     i, error = 1, 1
     while error > E*1000 and i < I:
-        v_updata = multi_updata_v(v,u,T,K,d)
-        v = v + v_updata
+        v_update = multi_update_v(v,u,T,K,d)
+        v = v + v_update
         if d == 1:
-            error = abs(v_updata)
+            error = abs(v_update)
         else:
-            error = sum(abs(v_updata))
+            error = sum(abs(v_update))
         i += 1
     if detail:
         print(f'v iterative times: {i} and v = {v}')
@@ -186,7 +189,7 @@ def pair_false_prediction_rate(T,K,u,v = None):
         result += tem
     return result/N
 
-def pair_updata_R(R,T,K,v):
+def pair_update_R(R,T,K,v):
     M = np.zeros_like(R)
     W = np.zeros_like(R)
     coe = np.exp(K@v)
@@ -205,10 +208,10 @@ def pair_fixv(T,K,v,n, E = 1e-6 , I = 1000, utr = None,detail = False):
         R = np.exp(utr)/sum(np.exp(utr))
     i, error = 1, 1
     while error > E and i < I:
-        R_new = pair_updata_R(R, T, K, v)
-        #updata = np.log(R_new / R)
-        updata = R_new - R
-        error = sum(abs((updata)))
+        R_new = pair_update_R(R, T, K, v)
+        #update = np.log(R_new / R)
+        update = R_new - R
+        error = sum(abs((update)))
         R = R_new
         i += 1
     u = np.log(R_new)
@@ -219,13 +222,13 @@ def pair_fixv(T,K,v,n, E = 1e-6 , I = 1000, utr = None,detail = False):
         pass
     return u
 
-def pair_updata_v(v,u,T,K):
+def pair_update_v(v,u,T,K):
     tem = u[T]
     s = tem[:,0]-tem[:,1] + K@v
     l1 = 1/(1+np.exp(s))
     l2 = K.T@ ((np.exp(s)/(1+np.exp(s))**2)[:, np.newaxis] * K)
-    updata = np.linalg.inv(l2)@K.T@l1
-    return updata
+    update = np.linalg.inv(l2)@K.T@l1
+    return update
 def pair_fixu(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
     if vtr is None:
         v = np.zeros(d)
@@ -234,12 +237,12 @@ def pair_fixu(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
         pass
     i, error = 1, 1
     while error > E and i < I:
-        v_updata = pair_updata_v(v, u, T, K)
-        v = v + v_updata
+        v_update = pair_update_v(v, u, T, K)
+        v = v + v_update
         if d == 1:
-            error = abs(v_updata)
+            error = abs(v_update)
         else:
-            error = sum(abs(v_updata))
+            error = sum(abs(v_update))
         i += 1
     if detail:
         print(f'v iterative times: {i} and v = {v}')
@@ -406,12 +409,12 @@ def pair_covariate_coeffecient(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = Fal
         pass
     i, error = 1, 1
     while error > E and i < I:
-        v_updata = pair_updata_v(v, u, T, KK)
-        v = v + v_updata
+        v_update = pair_update_v(v, u, T, KK)
+        v = v + v_update
         if d == 1:
-            error = abs(v_updata)
+            error = abs(v_update)
         else:
-            error = sum(abs(v_updata))
+            error = sum(abs(v_update))
         i += 1
     if detail:
         print(f'v iterative times: {i} and v = {v}')
@@ -431,13 +434,13 @@ def Newton_pair(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
     i, error = 1, 1
     V = [v]
     while error > E and i < I:
-        v_updata = pair_updata_v(v, u, T, K)
-        v = v + v_updata
+        v_update = pair_update_v(v, u, T, K)
+        v = v + v_update
         V.append(v)
         if d == 1:
-            error = abs(v_updata)
+            error = abs(v_update)
         else:
-            error = sum(abs(v_updata))
+            error = sum(abs(v_update))
         i += 1
     if detail:
         print(f'v iterative times: {i} and v = {v}')
@@ -456,10 +459,10 @@ def MM_pair(T,K,v,n, E = 1e-6 , I = 1000, utr = None,detail = False):
     u = u - np.mean(u)
     U = [u]
     while error > E and i < I:
-        R_new = pair_updata_R(R, T, K, v)
-        #updata = np.log(R_new / R)
-        updata = R_new - R
-        error = sum(abs((updata)))
+        R_new = pair_update_R(R, T, K, v)
+        #update = np.log(R_new / R)
+        update = R_new - R
+        error = sum(abs((update)))
         R = R_new
         i += 1
         u = np.log(R)
@@ -471,60 +474,30 @@ def MM_pair(T,K,v,n, E = 1e-6 , I = 1000, utr = None,detail = False):
         pass
     return U
 
-def test_statistic(T,X,n,d,num=10):
-    u_test = np.zeros(n)
-    v_test = pair_covariate_coeffecient(T,X,u_test,d)
-    score = np.exp(X@v_test)
-    p = score[:,0]/(score[:,0]+score[:,1])
-    M = max(abs(p-0.5))
-    pp = (p<0.5)
 
-    h = M/num
-    p_right = 0.5
-    R = []
+def estimate_v(X,d, E=1e-6, I = 1000,vtr = None,detail = False):
+    if vtr is None:
+        v = np.zeros(d)
+    else:
+        v = vtr[:]
+        pass
+    i, error = 1, 1
+    while error > E and i < I:
+        l1 = 1/(1+np.exp(X@v))
+        l2 = X.T@ ((l1*(1-l1))[:, np.newaxis] * X)
+        v_update = np.linalg.inv(l2)@X.T@l1
+        v = v + v_update
+        if d == 1:
+            error = abs(v_update)
+        else:
+            error = sum(abs(v_update))
+        i += 1
+    if detail:
+        print(f'v iterative times: {i} and v = {v}')
+    else:
+        pass
+    return v
 
-    for _ in range(num):
-        p_left = p_right-h
-        p_mean = (p_left+p_right)/2
-        k1 = len(pp[(p >= p_left) & (p < p_right)])
-        k2 = len(pp[(p <= 1-p_left) & (p > 1-p_right)])
-        k = k1+k2
-        if k>0:
-            r = (k1-k*p_mean)/np.sqrt(k*p_mean*(1-p_mean))  
-            R.append(r)
-        else:
-            pass
-        p_right -= h
-    chi2 = sum(np.array(R)**2)
-    return chi2,len(R) - 1
-    
-def test_statistic_multi(T,X,n,d,num=10):
-    
-    u_test = np.zeros(n)
-    v_test = multi_fixu(T,X,u_test,d)
-    X = np.array([x[np.sort(np.random.choice(len(x),2))]
-                   for x in X])
-    score = np.exp(X@v_test)
-    p = score[:,0]/(score[:,0]+score[:,1])
-    M = max(abs(p-0.5))
-    pp = (p<0.5)
-    h = M/num
-    p_right = 0.5
-    R = []
-    for _ in range(num):
-        p_left = p_right-h
-        p_mean = (p_left+p_right)/2
-        k1 = len(pp[(p >= p_left) & (p < p_right)])
-        k2 = len(pp[(p <= 1-p_left) & (p > 1-p_right)])
-        k = k1+k2
-        if k>0:
-            r = (k1-k*p_mean)/np.sqrt(k*p_mean*(1-p_mean))  
-            R.append(r)
-        else:
-            pass
-        p_right -= h
-    chi2 = sum(np.array(R)**2)
-    return chi2,len(R) - 1 
 ###CV
 def tennis_cross_validation(T,cov,n,subset,data_path,CV_name):
     N = len(T)
@@ -616,8 +589,40 @@ def horse_cross_validation(T,cov,n,subset,data_path,CV_filename):
                 f.write(str(value)+',')
             f.write(';')
         f.write('\n')
+s = lambda x: np.exp(x)/(1+np.exp(x))
 
-def test_score(T,X,n,d,num = 30):
+
+
+def binomial_test(p,num):
+    pl = p[p!=0.5]
+    pp = np.where(pl > 0.5, 1 - pl, pl)
+    kmeans = KMeans(n_clusters=num, random_state=42)
+    kmeans.fit(pp.reshape(-1, 1))
+    labels = kmeans.labels_
+    R = []
+    for i in range(num):
+        p_temp = pl[labels == i]
+        pp_temp = pp[labels == i]
+        positive = sum(p_temp<0.5) 
+        r = (positive-sum(pp_temp))/np.sqrt(sum(pp_temp*(1-pp_temp))) 
+        R.append(r)
+    chi = sum(np.array(R)**2)
+    return chi,len(R)
+def test_statistics(X,d,num,v_true = None):
+    XX = X.copy()
+    if v_true is None:
+        pass
+    else:
+        p = s(XX@v_true)
+        Y = np.random.binomial(1,p)
+        XX[Y==0,:] = -XX[Y==0,:]
+    v_hat = estimate_v(XX,d)
+    p_hat = s(XX@v_hat)
+    chi,dof = binomial_test(p_hat,num)
+    p_value = 1-chi2.cdf(chi,dof-1)
+    return (chi,p_value)
+
+"""def test_score(T,X,n,d,num = 30):
     N = len(T)
     u_test = np.zeros(n)
     v_test = pair_covariate_coeffecient(T,X,u_test,d)
@@ -631,7 +636,7 @@ def test_score(T,X,n,d,num = 30):
     PP = [pp[i:i + num] for i in range(0, N, num)]
     P = [p[i:i + num] for i in range(0, N, num)]
     gamma = [np.linalg.norm(p_-pp_)**2/sum(p_*(1-p_)) for p_,pp_ in zip(P,PP)]
-    return sum(gamma), N/num - 1
+    return sum(gamma), N/num"""
 
 """def test2(T,X,n,d,alpha=0.05,num = 10):
     u_test = np.zeros(n)
@@ -673,4 +678,88 @@ def test_score(T,X,n,d,num = 30):
     P = [p[i:i + num] for i in range(0, N, num)]
     gamma = [np.linalg.norm(p_-pp_)**2/sum(p_*(1-p_)) for p_,pp_ in zip(P,PP)]
     return sum(gamma)
+def test_statistic(T,X,n,d,num=10):
+    u_test = np.zeros(n)
+    v_test = pair_covariate_coeffecient(T,X,u_test,d)
+    score = np.exp(X@v_test)
+    p = score[:,0]/(score[:,0]+score[:,1])
+    M = max(abs(p-0.5))
+    pp = (p<0.5)
+
+    h = M/num
+    p_right = 0.5
+    R = []
+
+    for _ in range(num):
+        p_left = p_right-h
+        p_mean = (p_left+p_right)/2
+        k1 = len(pp[(p >= p_left) & (p < p_right)])
+        k2 = len(pp[(p <= 1-p_left) & (p > 1-p_right)])
+        k = k1+k2
+        if k>0:
+            r = (k1-k*p_mean)/np.sqrt(k*p_mean*(1-p_mean))  
+            R.append(r)
+        else:
+            pass
+        p_right -= h
+    chi2 = sum(np.array(R)**2)
+    return chi2,len(R)
+def test_statistic_multi(T,X,n,d,num=10):
+    
+    u_test = np.zeros(n)
+    v_test = multi_fixu(T,X,u_test,d)
+    X = np.array([x[np.sort(np.random.choice(len(x),2))]
+                   for x in X])
+    score = np.exp(X@v_test)
+    p = score[:,0]/(score[:,0]+score[:,1])
+    M = max(abs(p-0.5))
+    pp = (p<0.5)
+    h = M/num
+    p_right = 0.5
+    R = []
+    for _ in range(num):
+        p_left = p_right-h
+        p_mean = (p_left+p_right)/2
+        k1 = len(pp[(p >= p_left) & (p < p_right)])
+        k2 = len(pp[(p <= 1-p_left) & (p > 1-p_right)])
+        k = k1+k2
+        if k>0:
+            r = (k1-k*p_mean)/np.sqrt(k*p_mean*(1-p_mean))  
+            R.append(r)
+        else:
+            pass
+        p_right -= h
+    chi2 = sum(np.array(R)**2)
+    return chi2,len(R) - 1 
 """
+
+
+"""def binomial_test(p,num):
+    M = 0.5
+    h = M/num
+    p_right = 0.5
+    R = []
+    for _ in range(num):
+        p_left = p_right-h
+        p_mean = (p_left+p_right)/2
+        p1 = p[(p >= p_left) & (p < p_right)]
+        p2 = 1-p[(p <= 1-p_left) & (p > 1-p_right)]
+        pT = np.concatenate((p1,p2))
+        k = len(p1)+len(p2)
+        if k>0:
+            r = (len(p1)-sum(pT))/np.sqrt(sum(pT*(1-pT))) 
+            R.append(r)
+        else:
+            pass
+        p_right -= h
+    chi2 = sum(np.array(R)**2)
+    return chi2,len(R)
+def test_statistics(X,p,d,num):
+    Y = np.random.binomial(1,p)
+    XX = X.copy()
+    XX[Y==0,:] = -XX[Y==0,:]
+    v_hat = estimate_v(XX,d)
+    p_hat = s(XX@v_hat)
+    chi,dof = binomial_test(p_hat,num)
+    p_value = 1-chi2.cdf(chi,dof-1)
+    return (chi,p_value)"""
