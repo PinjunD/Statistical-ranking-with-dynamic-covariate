@@ -596,6 +596,7 @@ s = lambda x: np.exp(x)/(1+np.exp(x))
 def binomial_test(p,num):
     pl = p[p!=0.5]
     pp = np.where(pl > 0.5, 1 - pl, pl)
+    
     kmeans = KMeans(n_clusters=num, random_state=42)
     kmeans.fit(pp.reshape(-1, 1))
     labels = kmeans.labels_
