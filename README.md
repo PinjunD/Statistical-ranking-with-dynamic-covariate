@@ -22,10 +22,10 @@ After that, you should proceed to install the fundamental packages for Python:
 - **package**: This folder showcases the algorithm and synthetic data generator introduced in our paper.
 - **video**: This folder contains two visualized videos that showcase the dynamic top-10 rankings derived from tennis data.
 - **other files:**
--- **illustration.ipynb**: This file introduces a specific example to demonstrate our methods.
--- **simulation.ipynb**: This file details the process of simulating synthetic data.
--- **tennis.ipynb**: This file outlines the process of analyzing tennis data.
--- **horse racing.ipynb**: This file explains the process of analyzing horse racing data.
+  - **illustration.ipynb**: This file introduces a specific example to demonstrate our methods.
+  - **simulation.ipynb**: This file details the process of simulating synthetic data.
+  - **tennis.ipynb**: This file outlines the process of analyzing tennis data.
+  - **horse racing.ipynb**: This file explains the process of analyzing horse racing data.
 
 ## Instruction
 - You can open the *illustration.ipynb* file to gain a comprehensive understanding of the *package*, which includes some basic function, generator and algorithm.
