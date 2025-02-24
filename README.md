@@ -14,6 +14,7 @@ After that, you should proceed to install the fundamental packages for Python:
 -pip install pandas
 -pip install matplotlib
 -pip install joblib
+-pip install scipy
 ```
 
 ## Structure
@@ -36,8 +37,7 @@ After that, you should proceed to install the fundamental packages for Python:
 It's worth noting that the tennis data is sourced from [Jeff Sackmann](https://github.com/JeffSackmann/tennis-atp), while the horse racing data is from [Hong Kong horse-racing dataset](https://www.kaggle.com/datasets/gdaley/hkracing).
 
 ---
-
-> If you find our work useful in your research, consider citing our paper by:
+If you find our work beneficial for your research, we kindly ask you to consider citing our paper as follows:
 
 
 
