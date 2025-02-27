@@ -424,23 +424,19 @@ def pair_covariate_coeffecient(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = Fal
 
 
 
-def Newton_pair(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
+def Newton_pair(T,K,u,d, I = 100,vtr = None,detail = False):
     K = np.array([k[0] - k[1] for k in K])
     if vtr is None:
         v = np.zeros(d)
     else:
         v = vtr[:]
         pass
-    i, error = 1, 1
+    i= 1
     V = [v]
-    while error > E and i < I:
+    while  i < I:
         v_update = pair_update_v(v, u, T, K)
         v = v + v_update
         V.append(v)
-        if d == 1:
-            error = abs(v_update)
-        else:
-            error = sum(abs(v_update))
         i += 1
     if detail:
         print(f'v iterative times: {i} and v = {v}')
@@ -448,7 +444,7 @@ def Newton_pair(T,K,u,d, E=1e-6, I = 1000,vtr = None,detail = False):
         pass
     return V
 
-def MM_pair(T,K,v,n, E = 1e-6 , I = 1000, utr = None,detail = False):
+def MM_pair(T,K,v,n, I = 5, utr = None,detail = False):
     K = np.array([k[0] - k[1] for k in K])
     if utr is None:
         R = np.ones(n)/n
@@ -458,11 +454,9 @@ def MM_pair(T,K,v,n, E = 1e-6 , I = 1000, utr = None,detail = False):
     u = np.log(R)
     u = u - np.mean(u)
     U = [u]
-    while error > E and i < I:
+    while i < I:
         R_new = pair_update_R(R, T, K, v)
         #update = np.log(R_new / R)
-        update = R_new - R
-        error = sum(abs((update)))
         R = R_new
         i += 1
         u = np.log(R)
