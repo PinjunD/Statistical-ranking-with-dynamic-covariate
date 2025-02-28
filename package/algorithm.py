@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.stats import chi2
 from sklearn.cluster import KMeans
+from sklearn.metrics import roc_curve, auc
 
 def multi_likelihood_three(T,K,u,v = None):
     if len(v) == 0 or v is None:
@@ -174,6 +175,22 @@ def pair_logcoshloss(T,K,u,v = None):
         tem = np.log(np.cosh(1-tem))
         result += tem
     return result/N
+def pair_compute_p(T,X,u,v):
+    p = []
+    for i, t in enumerate(T):
+        R = np.exp(u[t] + X[i] @ v)
+        tem = R[0] / sum(R)
+        p.append(tem)
+    p = np.array(p)
+    y = np.ones(len(p))
+    p = np.concatenate((p,1-p))
+    ytrue = np.concatenate((y,1-y))
+    fpr, tpr, thresholds = roc_curve(ytrue, p)
+    return fpr, tpr
+def compute_auc(T,K,u,v = None):
+    fpr,tpr = pair_compute_p(T,K,u,v)
+    Auc = auc(fpr, tpr)
+    return Auc
 def pair_false_prediction_rate(T,K,u,v = None):
     if len(v) == 0 or v is None:
         d = len(K[0].T)
@@ -512,9 +529,8 @@ def tennis_cross_validation(T,cov,n,subset,data_path,CV_name):
         hinge_loss_plusDC = pair_hingeloss(Ttest,Xtest,u_plusDC,v_plusDC)
         logcosh_loss_pl = pair_logcoshloss(Ttest,Xtest,u_pl,v_pl)
         logcosh_loss_plusDC = pair_logcoshloss(Ttest,Xtest,u_plusDC,v_plusDC)
-        false_prediction_rate_pl = pair_false_prediction_rate(Ttest,Xtest,u_pl,v_pl)
-        false_prediction_rate_plusDC = pair_false_prediction_rate(Ttest,Xtest,u_plusDC,v_plusDC)
-
+        auc_pl = compute_auc(Ttest,Xtest,u_pl,v_pl)
+        auc_plusDC = compute_auc(Ttest,Xtest,u_plusDC,v_plusDC)
 
         #with open(data_path+"CV_filename",'a') as f:
         with open(data_path+CV_name['Cross entropy'],'a') as f:
@@ -527,15 +543,15 @@ def tennis_cross_validation(T,cov,n,subset,data_path,CV_name):
             f.write(';')
             f.write(str(hinge_loss_plusDC))
             f.write('\n')
-        with open(data_path+CV_name['Logcosh loss'],'a') as f:
+        with open(data_path+CV_name['Log-cosh loss'],'a') as f:
             f.write(str(logcosh_loss_pl))
             f.write(';')
             f.write(str(logcosh_loss_plusDC))
             f.write('\n')
-        with open(data_path+CV_name['False prediction rate'],'a') as f:
-            f.write(str(false_prediction_rate_pl))
+        with open(data_path+CV_name['AUC'],'a') as f:
+            f.write(str(auc_pl))
             f.write(';')
-            f.write(str(false_prediction_rate_plusDC))
+            f.write(str(auc_plusDC))
             f.write('\n')
 def horse_cross_validation(T,cov,n,subset,data_path,CV_filename):
     N = len(T)
@@ -616,145 +632,3 @@ def test_statistics(X,d,num,v_true = None):
     chi,dof = binomial_test(p_hat,num)
     p_value = 1-chi2.cdf(chi,dof-1)
     return (chi,p_value)
-
-"""def test_score(T,X,n,d,num = 30):
-    N = len(T)
-    u_test = np.zeros(n)
-    v_test = pair_covariate_coeffecient(T,X,u_test,d)
-    score = np.exp(X@v_test)
-    p = score[:,0]/(score[:,0]+score[:,1])
-    pp = np.random.binomial(1,[0.5]*len(p))
-    p[pp==0] = 1 - p[pp==0]
-    index = p.argsort()
-    p = p[index]
-    pp = pp[index]
-    PP = [pp[i:i + num] for i in range(0, N, num)]
-    P = [p[i:i + num] for i in range(0, N, num)]
-    gamma = [np.linalg.norm(p_-pp_)**2/sum(p_*(1-p_)) for p_,pp_ in zip(P,PP)]
-    return sum(gamma), N/num"""
-
-"""def test2(T,X,n,d,alpha=0.05,num = 10):
-    u_test = np.zeros(n)
-    v_test = pair_covariate_coeffecient(T,X,u_test,d)
-    score = np.exp(X@v_test)
-    p = score[:,0]/(score[:,0]+score[:,1])
-    p = np.sort(p)
-    p_one = p[p<0.5]
-    p_zero = p[p>0.5]
-    total_num = len(p_one)
-    
-    folders = [[num*i,num*(i+1)] for i in range(int(total_num/num))]
-    folders[-1][-1] =total_num-1
-    H = 0
-    for folder in folders:
-        interval = 1-p_one[folder]
-        p_0 = p_zero[(p_zero >= interval[-1]) & (p_zero <= interval[0])]
-        p_1 = p_one[folder[0]:folder[1]]
-        pp = np.concatenate((1-p_0, p_1), axis=0)
-        expected_npq = sum(pp*(1-pp))
-        r = (sum(pp)-len(p_1))**2/expected_npq
-        H += r
-    dof = len(folders) - d
-    return H, dof"""
-
-
-"""def test_score2(T,X,n,d,num = 30):
-    N = len(T)
-    u_test = np.zeros(n)
-    v_test = pair_covariate_coeffecient(T,X,u_test,d)
-    score = np.exp(X@v_test)
-    p = score[:,0]/(score[:,0]+score[:,1])
-    pp = np.random.binomial(1,[0.5]*len(p))
-    p[pp==0] = 1 - p[pp==0]
-    index = p.argsort()
-    p = p[index]
-    pp = pp[index]
-    PP = [pp[i:i + num] for i in range(0, N, num)]
-    P = [p[i:i + num] for i in range(0, N, num)]
-    gamma = [np.linalg.norm(p_-pp_)**2/sum(p_*(1-p_)) for p_,pp_ in zip(P,PP)]
-    return sum(gamma)
-def test_statistic(T,X,n,d,num=10):
-    u_test = np.zeros(n)
-    v_test = pair_covariate_coeffecient(T,X,u_test,d)
-    score = np.exp(X@v_test)
-    p = score[:,0]/(score[:,0]+score[:,1])
-    M = max(abs(p-0.5))
-    pp = (p<0.5)
-
-    h = M/num
-    p_right = 0.5
-    R = []
-
-    for _ in range(num):
-        p_left = p_right-h
-        p_mean = (p_left+p_right)/2
-        k1 = len(pp[(p >= p_left) & (p < p_right)])
-        k2 = len(pp[(p <= 1-p_left) & (p > 1-p_right)])
-        k = k1+k2
-        if k>0:
-            r = (k1-k*p_mean)/np.sqrt(k*p_mean*(1-p_mean))  
-            R.append(r)
-        else:
-            pass
-        p_right -= h
-    chi2 = sum(np.array(R)**2)
-    return chi2,len(R)
-def test_statistic_multi(T,X,n,d,num=10):
-    
-    u_test = np.zeros(n)
-    v_test = multi_fixu(T,X,u_test,d)
-    X = np.array([x[np.sort(np.random.choice(len(x),2))]
-                   for x in X])
-    score = np.exp(X@v_test)
-    p = score[:,0]/(score[:,0]+score[:,1])
-    M = max(abs(p-0.5))
-    pp = (p<0.5)
-    h = M/num
-    p_right = 0.5
-    R = []
-    for _ in range(num):
-        p_left = p_right-h
-        p_mean = (p_left+p_right)/2
-        k1 = len(pp[(p >= p_left) & (p < p_right)])
-        k2 = len(pp[(p <= 1-p_left) & (p > 1-p_right)])
-        k = k1+k2
-        if k>0:
-            r = (k1-k*p_mean)/np.sqrt(k*p_mean*(1-p_mean))  
-            R.append(r)
-        else:
-            pass
-        p_right -= h
-    chi2 = sum(np.array(R)**2)
-    return chi2,len(R) - 1 
-"""
-
-
-"""def binomial_test(p,num):
-    M = 0.5
-    h = M/num
-    p_right = 0.5
-    R = []
-    for _ in range(num):
-        p_left = p_right-h
-        p_mean = (p_left+p_right)/2
-        p1 = p[(p >= p_left) & (p < p_right)]
-        p2 = 1-p[(p <= 1-p_left) & (p > 1-p_right)]
-        pT = np.concatenate((p1,p2))
-        k = len(p1)+len(p2)
-        if k>0:
-            r = (len(p1)-sum(pT))/np.sqrt(sum(pT*(1-pT))) 
-            R.append(r)
-        else:
-            pass
-        p_right -= h
-    chi2 = sum(np.array(R)**2)
-    return chi2,len(R)
-def test_statistics(X,p,d,num):
-    Y = np.random.binomial(1,p)
-    XX = X.copy()
-    XX[Y==0,:] = -XX[Y==0,:]
-    v_hat = estimate_v(XX,d)
-    p_hat = s(XX@v_hat)
-    chi,dof = binomial_test(p_hat,num)
-    p_value = 1-chi2.cdf(chi,dof-1)
-    return (chi,p_value)"""
