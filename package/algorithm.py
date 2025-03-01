@@ -300,8 +300,9 @@ def pair_alternative(T,K,n,d=None, u = None ,v = None,P = False,
     l1 = pair_likelihood(T,K,u,v)
     i, error = 1, 1
     if save:
-        U = [u]
-        V = [v]
+        #U = [u]
+        #V = [v]
+        L = [l1]
         while error > E and i < 100 and not PL:
             if detail:
                 print('-'*5+f'{i}'+'-'*5)
@@ -313,14 +314,13 @@ def pair_alternative(T,K,n,d=None, u = None ,v = None,P = False,
             
             u = u1
             v = v1
-            U.append(u)
-            V.append(v)
             l2 = pair_likelihood(T, K, u, v)
+            L.append(l2)
             error = l2 - l1
             l1 = l2
             i += 1
         u = pair_fixv(T, KK, v, n, utr = u,E=Eu,detail=detail)
-        return U, V
+        return L
     else:
         while error > E and i < 100 and not PL:
             if detail:
