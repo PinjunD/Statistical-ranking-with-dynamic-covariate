@@ -201,15 +201,18 @@ def multi_alternative(T,X,n,d,
 sig = lambda x: np.exp(x)/(1+np.exp(x))
 
 ### likelihood
-def pair_likelihood(T,X,u,v = None):
+def pair_likelihood(T,K,u,v = None):
     if len(v) == 0 or v is None:
-        d = len(X[0].T)
+        d = len(K[0].T)
         v = np.zeros(d)
     else:
         pass
-    N = len(T)
+    if type(K) is list:
+        K = np.array([x[0,:]-x[1,:] for x in K])
+    else:
+        pass
     result = 0
-    different_score = u[T][:,0]-u[T][:,1]+X@v
+    different_score = u[T][:,0]-u[T][:,1]+K@v
     p = sig(different_score)
     result = np.mean(np.log(p))
     return result
@@ -237,7 +240,12 @@ def pair_update_R(R,T,K,v,win,lose,win_count,n):
     R = 1/res*win_count
     return R
 ### The whole algorithm of optimizing u
-def pair_fixv(T,K,v,n,win,lose,win_count, E = 1e-6 , I = 1000, u_initial = None,detail = False):
+def pair_fixv(T,K,v,n,win=None,lose=None,win_count=None, E = 1e-6 , I = 1000, u_initial = None,detail = False):
+    T = np.copy(T)
+    if win is None:
+        win,lose,win_count = get_win(T,n)
+    else:
+        pass
     if u_initial is None:
         R = np.ones(n)/n
     else:
@@ -293,7 +301,7 @@ def pair_alternative(T,X,n,d, u_initial = None ,v_initial = None,
                      E = 1e-6,Eu=1e-4,Ev=1e-8,I = 50,
                      P = False,detail = False,save_likelihood = False):
     
-    K = np.array([x[:,0]-x[:,1] for x in X])
+    K = np.array([x[0,:]-x[1,:] for x in X])
     T = np.array(T)
     win,lose,win_count = get_win(T,n)
     # Is PL?
