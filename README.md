@@ -15,6 +15,7 @@ After that, you should proceed to install the fundamental packages for Python:
 -pip install matplotlib
 -pip install joblib
 -pip install scipy
+-pip install scikit-learn
 ```
 
 ## Structure

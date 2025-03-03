@@ -391,17 +391,17 @@ def pair_compute_p(T,X,u,v):
 
 
 ###CV
-def tennis_cross_validation(T,cov,n,subset,data_path,CV_name):
+def tennis_cross_validation(T,cov,n,d,subset,data_path,CV_name):
     N = len(T)
     Ttrain = [T[i] for i in range(N) if i not in subset]
     Xtrain = [cov[i] for i in range(N) if i not in subset]
     Ttest = [T[i] for i in range(N) if i in subset]
     Xtest = [cov[i] for i in range(N) if i in subset]
-    u_pl,v_pl = AM(Ttrain,Xtrain,n,P=True,Eu=1e-5,type = 'pair')
+    u_pl,v_pl = AM(Ttrain,Xtrain,n,d,P=True,Eu=1e-5,type = 'pair')
     if np.isnan(u_pl).any():
         pass
     else:
-        u_plusDC,v_plusDC = AM(Ttrain,Xtrain,n,
+        u_plusDC,v_plusDC = AM(Ttrain,Xtrain,n,d,
                                     E=1e-5,Eu=1e-5,Ev=1e-12,
                                     I=52,type = 'pair')
         cross_entropy_pl = pair_likelihood(Ttest,Xtest,u_pl,v_pl)
@@ -413,9 +413,9 @@ def tennis_cross_validation(T,cov,n,subset,data_path,CV_name):
 
         #with open(data_path+"CV_filename",'a') as f:
         with open(data_path+CV_name['Cross entropy'],'a') as f:
-            f.write(str(cross_entropy_pl))
+            f.write(str(-cross_entropy_pl))
             f.write(';')
-            f.write(str(cross_entropy_plusDC))
+            f.write(str(-cross_entropy_plusDC))
             f.write('\n')
         with open(data_path+CV_name['Hinge loss'],'a') as f:
             f.write(str(hinge_loss_pl))
@@ -427,7 +427,7 @@ def tennis_cross_validation(T,cov,n,subset,data_path,CV_name):
             f.write(';')
             f.write(str(auc_plusDC))
             f.write('\n')
-def horse_cross_validation(T,cov,n,subset,data_path,CV_filename):
+def horse_cross_validation(T,cov,n,d,subset,data_path,CV_filename):
     N = len(T)
     Ttrain = [T[i] for i in range(N) if i not in subset]
     Xtrain = [cov[i] for i in range(N) if i not in subset]
@@ -435,8 +435,8 @@ def horse_cross_validation(T,cov,n,subset,data_path,CV_filename):
     Xtest = [cov[i] for i in range(N) if i in subset]
 
 
-    u_pl,v_pl = AM(Ttrain,Xtrain,n,P=True,Eu=1e-5,detail=True)
-    u_plusDC,v_plusDC = AM(Ttrain,Xtrain,n,
+    u_pl,v_pl = AM(Ttrain,Xtrain,n,d,P=True,Eu=1e-5,detail=True)
+    u_plusDC,v_plusDC = AM(Ttrain,Xtrain,n,d,
                                  E=1e-5,Eu=1e-5,Ev=1e-12,
                                  I=52)
     
