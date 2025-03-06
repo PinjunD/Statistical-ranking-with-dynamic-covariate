@@ -13,7 +13,7 @@ Figure_name = os.path.basename(__file__)[:-3]
 covariate_columns = ['Act. Wt.','Dr.','Win Odds']
 name_columns = 'Horse'
 
-df = pd.read_csv('runs(preprocessing).csv',index_col='race_id',low_memory=False)
+df = pd.read_csv('runs(preprocessed).csv',index_col='race_id',low_memory=False)
 
 horseID = {}
 T = []
