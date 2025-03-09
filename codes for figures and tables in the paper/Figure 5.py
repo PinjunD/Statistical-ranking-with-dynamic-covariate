@@ -11,7 +11,7 @@ rc('font', family='serif')
 pd.set_option('future.no_silent_downcasting', True)
 sz = 36
 Figure_name = os.path.basename(__file__)[:-3]
-cpu_cores = os.cpu_count()-1
+cpu_cores = os.cpu_count()
 np.random.seed(100)
 
 def printf(u_infty,v_infty,repeat,nn,name):
@@ -42,11 +42,15 @@ def simulation(n, N, v,d, m_lower, m_upper, name = 'NURHM', repeat = None):
             printf(u_infty,v_infty,repeat,n,name)
         return result
 
-repeat_time = 1 # set 300
+repeat_time = 300 # set 300
 
 
 
-print('The program takes nearly 3 hours')
+print('In this program, we verify the uniform consistency '
+      'of the MLE in the PlusDC model using simulated data.\n'
+      'We set n={200,400,600,800,1000} and conduct'
+      'the simulations for NURHM and HSBM with 300 repeations.\n'
+      'Please note that the program takes nearly 3 hours to complete.')
 for i in range(5):
     print(str(5-i)+'.'*6)
     time.sleep(1)
@@ -56,7 +60,7 @@ print('Start!')
 t1 = time.time()
 
 # NURHM
-
+print('='*10+'NURHM'+'='*10)
 ## Settings
 n = [200,400,600,800,1000]
 v = [1,-0.5,0]
@@ -97,10 +101,10 @@ for j in range(2):
     plt.yticks(y_ticks[j], size=sz)
     plt.grid()
     plt.savefig(save[j]+'.png')
-
+print(f'We have saved the NURHM results as {Figure_name}(a).png and {Figure_name}(b).png.\n')
 
 # HSBM
-
+print('\n='*10+'HSBM'+'='*10)
 ## Settings
 N = lambda n: int(0.07*n**2)
 m_lower = 5
@@ -131,6 +135,7 @@ for j in range(2):
     plt.yticks(y_ticks[j], size=sz)
     plt.grid()
     plt.savefig(save[j]+'.png')
+print(f'We have saved the HSBM results as {Figure_name}(c).png and {Figure_name}(d).png\n')
 
 t2 = time.time()
-print(f'times:{t2-t1}')
+print(f'Total Time:{int(t2-t1)}s')

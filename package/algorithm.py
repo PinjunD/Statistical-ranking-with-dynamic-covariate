@@ -173,7 +173,7 @@ def multi_alternative(T,X,n,d,
     i, error = 1, 1
     if PL:
         # PL
-        u = multi_fixv(T, X, v, n, W,E=Eu,I=1000, u_initial = u)
+        u = multi_fixv(T, X, v, n, W,E=Eu,I=1000, u_initial = u,detail = detail)
     else:
         # PlusDC
         while error > E and i < 100:
