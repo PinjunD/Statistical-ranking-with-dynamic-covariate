@@ -9,6 +9,7 @@ rc('font', family='serif')
 pd.set_option('future.no_silent_downcasting', True)
 sz = 36
 Figure_name = os.path.basename(__file__)[:-3]
+cpu_cores = os.cpu_count()
 
 # loading data
 covariate_columns = ['Act. Wt.','Dr.','Win Odds']
@@ -110,7 +111,7 @@ def horse_cross_validation(T,cov,n,d,subset,CV_filename):
 
 ### Save data
 CV_filename = 'horse_KFCV.txt'
-results = Parallel(n_jobs=8)(delayed(horse_cross_validation)
+results = Parallel(n_jobs=cpu_cores)(delayed(horse_cross_validation)
                              (T,cov,n,d,fold,CV_filename) for fold in folds)
 
 ### Loading the results in above step.

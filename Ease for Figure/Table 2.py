@@ -8,6 +8,7 @@ rc('font', family='serif')
 pd.set_option('future.no_silent_downcasting', True)
 sz = 36
 Figure_name = os.path.basename(__file__)[:-3]
+cpu_cores = os.cpu_count()
 
 # loading data
 covariate_columns = ['Act. Wt.','Dr.','Win Odds']
@@ -67,7 +68,7 @@ def get_results(T,cov,s,N,n):
 get_subset = lambda n: [subset for i in range(n + 1)
                          for subset in itertools.combinations(list(range(n)), i)]
 subset = get_subset(3)
-results = Parallel(n_jobs=9)(delayed(get_results)(T,cov,ss,N,n) for ss in subset)
+results = Parallel(n_jobs=cpu_cores)(delayed(get_results)(T,cov,ss,N,n) for ss in subset)
 Subset, likelihood, AIC_, BIC_ = [],[],[],[]
 for result in results:
     t = [0,0,0]
@@ -85,9 +86,5 @@ df = pd.DataFrame({
     'AIC': AIC_,
     'BIC': BIC_,
 })
-fig, ax = plt.subplots(figsize=(10.8,10))
-ax.axis('tight')
-ax.axis('off')
-table = ax.table(cellText=df.values, colLabels=df.columns, cellLoc = 'center', loc='center')
-plt.savefig(Figure_name+'.png')
+df.to_csv(Figure_name+'.csv')
     

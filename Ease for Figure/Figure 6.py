@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rc
-from joblib import Parallel,delayed
 rc('text', usetex=True)
 rc('font', family='serif')
 pd.set_option('future.no_silent_downcasting', True)
@@ -97,11 +96,7 @@ df = pd.DataFrame({
     r'Rank_{PL}': RankPL,
     r'Rank_{PlusDC}': RankPlusDC
 })
-fig, ax = plt.subplots(figsize=(10.8,10))
-ax.axis('tight')
-ax.axis('off')
-table = ax.table(cellText=df.values, colLabels=df.columns, cellLoc = 'center', loc='center')
-plt.savefig(Figure_name+'(right).png')
+df.to_csv(Figure_name+'(right).csv')
     
 
 

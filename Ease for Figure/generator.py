@@ -1,12 +1,33 @@
-import basicfun 
 import numpy as np
+def order(R):
+    m = len(R)
+    o = [m-1 for _ in range(m)]
+    for i in range(m-1):
+        R = R/sum(R)
+        win = np.random.multinomial(1,R)
+        ind = np.nonzero(win == 1)[0][0]
+        o[ind] = i
+        R[ind] = 0
+    return o
+def u_uniform(n):
+    u = np.random.uniform(-0.5, 0.5, n)
+    u += - np.mean(u)
+    return u
+def x_center(n,d):
+    x = np.random.uniform(-0.5, 0.5, (n,d))
+    x += - np.mean(x)
+    return x
+def x_generator(x):
+    m, d = x.shape
+    variables = np.random.normal(0,1,size=(m,d))
+    return variables
 
 
 class MultipleComparison:
     def __init__(self, n, N, v, 
-                 u_generator = basicfun.u_uniform,
-                 x_center = basicfun.x_center,
-                 x_generator = basicfun.x_generator, 
+                 u_generator = u_uniform,
+                 x_center = x_center,
+                 x_generator = x_generator, 
                  m_lower = 2, m_upper = 3,Type = 'NURHM'):
         self.n = n
         self.N = N(n)
@@ -42,7 +63,7 @@ class MultipleComparison:
             latent_score = self.u[edge]
             dynamic_score = self.x_generator(self.x_center[edge])
             R = np.exp(latent_score + dynamic_score@self.v)
-            o = basicfun.order(R)
+            o = order(R)
             new_edge = [x for _, x in sorted(zip(o, edge))]
             new_X = np.array([x for _, x in sorted(zip(o, dynamic_score))])
             self.T.append(new_edge)
@@ -73,7 +94,7 @@ class MultipleComparison:
         for T,X in zip(self.T,self.X):
             latent_score = self.u[T]
             R = np.exp(latent_score + X@self.v)
-            o = basicfun.order(R)
+            o = order(R)
             new_edge = [x for _, x in sorted(zip(o, T))]
             new_X = np.array([x for _, x in sorted(zip(o, X))])
             T_new.append(new_edge)
