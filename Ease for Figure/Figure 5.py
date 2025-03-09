@@ -11,23 +11,49 @@ rc('font', family='serif')
 pd.set_option('future.no_silent_downcasting', True)
 sz = 36
 Figure_name = os.path.basename(__file__)[:-3]
-cpu_cores = os.cpu_count()
-
-
+cpu_cores = os.cpu_count()-1
 np.random.seed(100)
-def simulation(n, N, v,d, m_lower, m_upper, name = 'NURHM'):
-        print('-'*10)
+
+def printf(u_infty,v_infty,repeat,nn,name):
+    if repeat == 1:
+        repeat_str = str(repeat)+'st'
+    elif repeat == 2:
+        repeat_str = str(repeat)+'nd'
+    elif repeat == 3:
+        repeat_str = str(repeat)+'rd'
+    else:
+        repeat_str = str(repeat)+'th'
+    lines = '-'*10+'\n'
+    print1 = f'The {repeat_str} repetition of {name}: number of nodes:{nn}.\n'
+    print2 = f'u_infty:{u_infty}, v_infty:{v_infty}.'
+    screen = lines + print1 + print2
+    print(screen)
+
+def simulation(n, N, v,d, m_lower, m_upper, name = 'NURHM', repeat = None):
         H = generator.MultipleComparison(n,N,v,m_lower=m_lower,m_upper=m_upper,Type = name)
         u_true, v_true = H.u,H.v
         u_estimation, v_estimation = algorithm.AM(H.T,H.X,n,d,u_initial=u_true,v_initial=v_true)
         u_infty = max(abs(u_estimation-u_true))
         v_infty = max(abs(v_estimation-v_true))
         result = [H.n,u_infty,v_infty]
+        if repeat is None:
+            pass
+        else:
+            printf(u_infty,v_infty,repeat,n,name)
         return result
-            
-t1 = time.time()
 
-repeat_time = 300 # set 300
+repeat_time = 1 # set 300
+
+
+
+print('The program takes nearly 3 hours')
+for i in range(5):
+    print(str(5-i)+'.'*6)
+    time.sleep(1)
+print('Start!')
+
+
+t1 = time.time()
 
 # NURHM
 
@@ -38,8 +64,8 @@ d = len(v)
 N = lambda n: int(0.1*n*(np.log(n))**3)
 m_lower = 2
 m_upper = 8
-tasks = [delayed(simulation)(nn, N, v, d, m_lower, m_upper,name = 'NURHM') 
-         for nn in n for _ in range(repeat_time) ]
+tasks = [delayed(simulation)(nn, N, v, d, m_lower, m_upper,name = 'NURHM',repeat=i+1) 
+         for nn in n for i in range(repeat_time) ]
 results = np.array(Parallel(n_jobs=cpu_cores)(tasks))
 ## Prepocessing data
 S,T = [],[]
@@ -79,8 +105,8 @@ for j in range(2):
 N = lambda n: int(0.07*n**2)
 m_lower = 5
 m_upper = 6
-tasks = [delayed(simulation)(nn, N, v, d, m_lower, m_upper,name = 'HSBM') 
-         for nn in n for _ in range(repeat_time) ]
+tasks = [delayed(simulation)(nn, N, v, d, m_lower, m_upper,name = 'HSBM',repeat = repeat+1) 
+         for nn in n for repeat in range(repeat_time) ]
 results = np.array(Parallel(n_jobs=cpu_cores)(tasks))
 ## Prepocessing data
 S,T = [],[]

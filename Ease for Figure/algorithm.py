@@ -1,5 +1,8 @@
 import numpy as np
+import warnings
 
+# Suppress all warnings
+warnings.filterwarnings("ignore")
 ''' 
 Notations
     T is the edge list (len=N), whose element is a list of index (with m_i)
@@ -186,6 +189,10 @@ def multi_alternative(T,X,n,d,
             error = l2 - l1
             l1 = l2
             i += 1
+    if np.isnan(u).any() or np.isnan(v).any():
+        print('The optimal solution does not exist')
+    else:
+        pass
     if save_likelihood:
         return L
     else:
@@ -338,6 +345,10 @@ def pair_alternative(T,X,n,d, u_initial = None ,v_initial = None,
             error = l2 - l1
             l1 = l2
             i += 1
+    if np.isnan(u).any() or np.isnan(v).any():
+        print('The optimal solution does not exist')
+    else:
+        pass
     if save_likelihood:
         return L
     else:

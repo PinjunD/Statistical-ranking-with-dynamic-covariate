@@ -2,6 +2,8 @@ import numpy as np
 from scipy.stats import chi2
 from sklearn.cluster import KMeans
 from sklearn.metrics import roc_curve, auc
+import warnings
+warnings.filterwarnings("ignore")
 
 ''' 
 Notations

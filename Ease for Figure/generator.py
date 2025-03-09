@@ -21,14 +21,20 @@ def x_generator(x):
     m, d = x.shape
     variables = np.random.normal(0,1,size=(m,d))
     return variables
-
+normalize = lambda n: 25*n+4*np.log(n)**3
+p_in1 =lambda n: 5*n/normalize(n)
+p_in2 =lambda n: 20*n/normalize(n)
+p_cross =lambda n: 4*np.log(n)**3/normalize(n)
+p_SBM = {'number':lambda x: int(x/3),
+         'p':lambda x: [p_in1(x),p_in2(x),p_cross(x)]
+}
 
 class MultipleComparison:
     def __init__(self, n, N, v, 
                  u_generator = u_uniform,
                  x_center = x_center,
                  x_generator = x_generator, 
-                 m_lower = 2, m_upper = 3,Type = 'NURHM'):
+                 m_lower = 2, m_upper = 3,Type = 'NURHM',p_SBM = p_SBM):
         self.n = n
         self.N = N(n)
         self.v = np.array(v)
@@ -40,19 +46,21 @@ class MultipleComparison:
         self.x_generator = x_generator
         self.T = []
         self.X = []
-        self.get_community()
+        self.get_community(p_SBM)
         self.get_edges()
-        print(f'complete get edges: Num_Edges={len(self.T)}, '
-              f'Num_Nodes = {n},m_lower = {m_lower},m_upper = {m_upper}')
-    def get_community(self):
+        """print(f'complete get edges: Num_Edges={len(self.T)}, '
+              f'Num_Nodes = {n},m_lower = {m_lower},m_upper = {m_upper}')"""
+    def get_community(self,p_SBM):
         if self.type == 'HSBM':
-            self.n1 = int(self.n/3)
+            self.n1 = p_SBM['number'](self.n)
+            self.p = p_SBM['p'](self.n)
+            """self.n1 = int(self.n/3)
             n = self.n
-            p = 25*n+4*np.log(n)**3
-            p1 = 5*n/p
-            p2 = 20*n/p
-            p3 = 4*np.log(n)**3/p
-            self.p = [p1, p2, p3]#community1 community2 cross
+            N = 25*n+4*np.log(n)**3
+            p1 = 5*n/N
+            p2 = 20*n/N
+            p3 = 4*np.log(n)**3/N
+            self.p = [p1, p2, p3]#community1 community2 cross"""
 
         else:
             pass
@@ -109,4 +117,5 @@ if __name__ == '__main__':
     v = [1,-0.5,0]
     m_lower = 2
     m_upper = 4
-    H = MultipleComparison(n,N,v,m_lower=m_lower,m_upper=m_upper)
+    H = MultipleComparison(n,N,v,m_lower=m_lower,m_upper=m_upper,Type='HSBM')
+    print(H.T)

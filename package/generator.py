@@ -30,8 +30,7 @@ class MultipleComparison:
             p1 = 5*n/p
             p2 = 20*n/p
             p3 = 4*np.log(n)**3/p
-            self.p = [p1, p2, p3]#community1 community2 cross
-
+            self.p = [p1, p2, p3] #community1 community2 cross
         else:
             pass
     
