@@ -29,25 +29,72 @@ python "FigureS2.py" # In HorceRacing
 python "FigureS3.py" # In HorceRacing
 ```
 
-### 2.1. Demonstration:
+### 2.1. Demonstration  
 
-<span style="font-size: 20px;">**Simulation**:<br></span> 
-This pattern aims to confirm the uniform consistency of the maximum likelihood estimator (MLE) in the PlusDC model using simulated data, considering both the NURHM and HSBM random hypergraph models. (Please execute **FigureS1.py**)
+#### **Simulation**  
+This experiment verifies the uniform consistency of the maximum likelihood estimator (MLE) in the PlusDC model using simulated data, considering both the NURHM and HSBM random hypergraph models.  
 
-* **FigureS1.py**: This executable file generates a hypergraph and edge-dependent covariates under specific setting, calculating the corresponding $l_\infty$ loss between estimator and true parameters. Under 300 repetitions, the file save the results in *FigureS1(a).png*, *FigureS1(b).png*, *FigureS1(c).png* and *FigureS1(d).png*.
+📌 **To run:** Execute **FigureS1.py**  
 
-<span style="font-size: 20px;">**Tennis**:<br></span>
-This pattern seeks to investigate the aging effect on players in the sport of tennis to develop a dynamic "ability table" for the top 10 prominent players in history. After preprocessing the data, we select the optimal combination of Gaussian basis using the BIC criterion to approach the aging effect, comparing the results with the vanilla BT model (please execute **Figure5.py**). Additionally, we load information about players' birthdays to plot the "dynamic ability table" for the top 10 prominent players (please execute **Figure1.py**).
+- **FigureS1.py**:  
+  - Generates a hypergraph with edge-dependent covariates under a specific setting.  
+  - Computes the \( l_{\infty} \) loss between the estimator and true parameters.  
+  - Runs 300 repetitions and saves the results as:  
+    - *FigureS1(a).png*  
+    - *FigureS1(b).png*  
+    - *FigureS1(c).png*  
+    - *FigureS1(d).png*  
 
-* **Figure5.py**: This executable file initiates 64 candidate combinations of Gaussian bases, calculating the coefficients of each basis using the PlusDC model. It then selects the optimal combination based on the BIC. The optimal bases and the aging effect function are plotted in *Figure5(a).png* and *Figure5(b).png*, respectively. Then, the file compares the players' rankings from the PlusDC model with those from the BT model, saving the results as *Figure(c).csv*.
-* **Figure1.py**: This executable file utilizes the optimal bases (simlar to **Figure5.py**) to fit the PlusDC model, integrating the birthday information to plot the "dynamic ability table" in *Figure1.png.*
+---
 
-<span style="font-size: 20px;">**HorceRacing**:<br></span>
-This pattern strives to study the impacts from actual weight, draw and public belief in horce racing. After traversing all the possible combinations of covariates, we compute the corresponding log-likelihood, AIC and BIC in *TableS2.csv* (please execute **TableS2.py**), comparing the results with vanilla PL model (please execute **FigureS2.py**). To futher examine the prediction performance, we conduct k-fold cross validation, and compare the results with the corresponding performance of the PL model and public belief (please execute **FigureS3.py**).
+#### **Tennis**  
+This experiment examines the aging effect on tennis players and constructs a dynamic "ability table" for the top 10 players in history. After preprocessing the data, we select the optimal combination of Gaussian bases using the BIC criterion to model the aging effect and compare the results with the standard BT model.  
 
-* **TableS2.py**: This executable file  computes the log-likelihood and AIC and BIC  corresponding to each combinition of covariates, saving the results in *TableS2.csv*.
-* **FigureS2.py**: This executable file  compares the results from PlusDC model with those from PL model, saving the results in *FigureS2(right).csv* and *FigureS2(left).ong*.
-* **FigureS3.py**: This executable file conducts k-fold cross validation, comparing the results with the corresponding performance of the PL model and public belief. The results have been plotted in *FigureS3(a).png*, *FigureS3(b).png* and *FigureS3(c).png*.
+📌 **To run:**  
+- Execute **Figure5.py** to determine the optimal Gaussian basis.  
+- Execute **Figure1.py** to generate the "dynamic ability table."  
+
+- **Figure5.py**:  
+  - Tests 64 candidate Gaussian basis combinations.  
+  - Computes basis coefficients using the PlusDC model.  
+  - Selects the optimal combination using the BIC criterion.  
+  - Plots and saves:  
+    - *Figure5(a).png* (Optimal bases)  
+    - *Figure5(b).png* (Aging effect function)  
+  - Compares player rankings from the PlusDC and BT models, saving results in *Figure5(c).csv*.  
+
+- **Figure1.py**:  
+  - Uses the optimal bases (from **Figure5.py**) to fit the PlusDC model.  
+  - Integrates player birthdates to generate the "dynamic ability table."  
+  - Saves the results as *Figure1.png*.  
+
+---
+
+#### **Horse Racing**  
+This experiment investigates the impact of actual weight, draw position, and public belief in horse racing. We evaluate different covariate combinations by computing log-likelihood, AIC, and BIC, comparing results against the standard PL model. Additionally, we conduct k-fold cross-validation to assess predictive performance.  
+
+📌 **To run:**  
+- Execute **TableS2.py** to compute model selection criteria.  
+- Execute **FigureS2.py** to compare the PlusDC model with the PL model.  
+- Execute **FigureS3.py** for k-fold cross-validation and performance comparison.  
+
+- **TableS2.py**:  
+  - Computes log-likelihood, AIC, and BIC for all covariate combinations.  
+  - Saves results in *TableS2.csv*.  
+
+- **FigureS2.py**:  
+  - Compares results from the PlusDC and PL models.  
+  - Saves outputs as:  
+    - *FigureS2(right).csv*  
+    - *FigureS2(left).png*  
+
+- **FigureS3.py**:  
+  - Conducts k-fold cross-validation.  
+  - Compares predictive performance with the PL model and public belief.  
+  - Saves plots as:  
+    - *FigureS3(a).png*  
+    - *FigureS3(b).png*  
+    - *FigureS3(c).png*  
 
 ### 2.2.  Algorithm Core Functions
 - **algorithm.py**: This file contains all the details in the alternating maximization algorithm.
