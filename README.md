@@ -1,9 +1,7 @@
 # [Statistical ranking with dynamic covariates](https://arxiv.org/abs/2406.16507)<br>
 
 ## Installation 
-Please note that it is necessary to install Python on your computer before proceeding. A comprehensive tutorial can be found at the following link: [Python Installation](https://www.python.org/downloads/).
-
-To begin with, please clone the repository.
+Please download the codes file, or install git bash and clone the repository as follows in Command:
 
 ```bash
 git clone https://github.com/PinjunD/Statistical-ranking-with-dynamic-covariate.git
