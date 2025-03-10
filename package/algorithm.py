@@ -191,6 +191,11 @@ def multi_alternative(T,X,n,d,
             error = l2 - l1
             l1 = l2
             i += 1
+    if np.isnan(u).any() or np.isnan(v).any():
+        print('='*10+'Warning'+'='*10)
+        print('The optimal solution does not exist')
+    else:
+        pass
     if save_likelihood:
         return L
     else:
@@ -263,7 +268,8 @@ def pair_fixv(T,K,v,n,win=None,lose=None,win_count=None, E = 1e-6 , I = 1000, u_
     u = np.log(R_new)
     u = u - np.mean(u)
     if detail:
-        print(f'u iteration times: {i}')
+        print('='*10+'Warning'+'='*10)
+        print('The optimal solution does not exist')
     else:
         pass
     return u
@@ -343,6 +349,10 @@ def pair_alternative(T,X,n,d, u_initial = None ,v_initial = None,
             error = l2 - l1
             l1 = l2
             i += 1
+    if np.isnan(u).any() or np.isnan(v).any():
+        print('The optimal solution does not exist')
+    else:
+        pass
     if save_likelihood:
         return L
     else:

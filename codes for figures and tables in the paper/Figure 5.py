@@ -51,6 +51,7 @@ print('In this program, we verify the uniform consistency '
       'We set n={200,400,600,800,1000} and conduct'
       'the simulations for NURHM and HSBM with 300 repeations.\n'
       'Please note that the program takes nearly 3 hours to complete.')
+alter_repeat=input()
 for i in range(5):
     print(str(5-i)+'.'*6)
     time.sleep(1)

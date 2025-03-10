@@ -1,6 +1,8 @@
 # [Statistical ranking with dynamic covariates](https://arxiv.org/abs/2406.16507)<br>
 
-## Installation
+## Installation 
+Please note that it is necessary to install Python on your computer before proceeding. A comprehensive tutorial can be found at the following link: [Python Installation](https://www.python.org/downloads/).
+
 To begin with, please clone the repository.
 
 ```bash
