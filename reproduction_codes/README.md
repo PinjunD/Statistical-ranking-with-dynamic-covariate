@@ -1,8 +1,8 @@
 # Reproducibility for the numerical experiments
-This repository contains the source codes for all the numerical experiments in [Statistical ranking with dynamic covariates](https://arxiv.org/abs/2406.16507). For a better experience in reproduction, we demonstrate exhaustive illustration as follows:
+This repository contains the source code for all the numerical experiments in [Statistical ranking with dynamic covariates](https://arxiv.org/abs/2406.16507). For a better reproduction experience, we provide a detailed illustration as follows:
 
 ## 1. Installation
-Please download the codes file, or install git bash and clone the repository as follows in Command:
+To get started, you can either download the source code directly or use Git to clone the repository.
 
 ```bash
 git clone https://github.com/PinjunD/Statistical-ranking-with-dynamic-covariate.git
@@ -10,16 +10,15 @@ cd Statistical-ranking-with-dynamic-covariate
 cd reproductions_codes
 ```
 
-Install the required Python packages:
+Ensure you have Python installed (preferably Python 3.x), then install the required packages using:
+
 ```bash
--pip install numpy
--pip install pandas
--pip install matplotlib
--pip install joblib
+pip install numpy pandas matplotlib joblib
 ```
 
 ## 2. Repository:
-We provide a list of executable files for plotting the figures presented in the simulation, tennis data, and horse racing data. To reproduce our numerical results, simply execute the following code in the corresponding directory:
+This repository provides executable scripts for generating the figures and tables presented in our numerical experiments, including simulations, tennis data, and horse racing data. To reproduce our numerical results, simply execute the following code in the corresponding directory:
+
 ```bash
 
 python "Figure1.py" # In Tennis
@@ -30,7 +29,7 @@ python "FigureS2.py" # In HorceRacing
 python "FigureS3.py" # In HorceRacing
 ```
 
-### 2.1. Demonstrations:
+### 2.1. Demonstration:
 
 <span style="font-size: 20px;">**Simulation**:<br></span> 
 This pattern aims to confirm the uniform consistency of the maximum likelihood estimator (MLE) in the PlusDC model using simulated data, considering both the NURHM and HSBM random hypergraph models. (Please execute **FigureS1.py**)
