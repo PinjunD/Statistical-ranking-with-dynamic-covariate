@@ -1,4 +1,5 @@
-# Reproducibility for the numerical experiments
+# Reproducibility of the Numerical Experiments
+
 This repository contains the source code for all the numerical experiments in [Statistical ranking with dynamic covariates](https://arxiv.org/abs/2406.16507). For a better reproduction experience, we provide a detailed illustration as follows:
 
 ## 1. Installation
