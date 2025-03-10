@@ -39,7 +39,7 @@ This experiment verifies the uniform consistency of the maximum likelihood estim
 
 - **FigureS1.py**:  
   - Generates a hypergraph with edge-dependent covariates under a specific setting.  
-  - Computes the $l_\infty$ loss between the estimator and true parameters.  
+  - Computes the $\ell_\infty$-loss between the estimator and true parameters.  
   - Runs 300 repetitions and saves the results as:  
     - *FigureS1(a).png*  
     - *FigureS1(b).png*  
