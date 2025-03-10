@@ -74,7 +74,7 @@ if __name__ == "__main__":
     print('-'*10+'PlusDC model'+'-'*10)
     u_plusDC,v_plusDC = algorithm.AM(T,cov,n,d,
                                     E=1e-5,Eu=1e-5,Ev=1e-12,
-                                    I=52,detail=True)
+                                    I=52)
     likelihood = algorithm.multi_likelihood(T,cov,u_plusDC,v_plusDC)
     print(f"The log-likelihood of PlusDC model: {likelihood}")
     print(f"The coefficient of covariates: {v_plusDC}")
@@ -148,4 +148,3 @@ if __name__ == "__main__":
 
     plt.savefig(Figure_name+'(left).png')
     print(f'The figure also have been saved in {Figure_name}(left).png')
-    plt.show()

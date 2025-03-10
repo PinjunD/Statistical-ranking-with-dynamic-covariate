@@ -16,6 +16,8 @@ rc('font', family='serif')
 pd.set_option('future.no_silent_downcasting', True)
 sz = 36
 Figure_name = os.path.basename(__file__)[:-3]
+cpu_cores = os.cpu_count()
+
 def print_progress_bar(iteration, total, length=40):
     percent = (iteration / total)
     bar_length = int(length * percent)
@@ -73,7 +75,7 @@ if __name__ == "__main__":
     get_subset = lambda n: [subset for i in range(n + 1)
                             for subset in itertools.combinations(list(range(n)), i)]
     subset = get_subset(6)
-    res = Parallel(n_jobs=7)(delayed(get_BIC)(T,cov,subset[i],N,n,shared_list) for i in range(len(subset)))
+    res = Parallel(n_jobs=cpu_cores)(delayed(get_BIC)(T,cov,subset[i],N,n,shared_list) for i in range(len(subset)))
     s = subset[np.argmin(res)]
     print('\nWe have selected the best basis functions based on BIC.')
     print('(a,ρ) ∈ {(25,0.01),(25,0.03),(30,0.01),(35,0.01)}')
@@ -94,7 +96,7 @@ if __name__ == "__main__":
     likelihood_BT = algorithm.pair_likelihood(T,X,u_BT,v)
     print(f"Complete! v={v_plusDC}")
     # plot table
-    print('\n'+"="*10+'Data Arraging'+"="*10)
+    print('\n'+"="*10+'Ranking'+"="*10)
     np.set_printoptions(precision=3)
     plusDC_top10 = np.argsort(u_plusDC)[-10:][::-1]
     u_t10_plusDC = u_plusDC[plusDC_top10]
@@ -173,6 +175,5 @@ if __name__ == "__main__":
     rc('font', family='serif')
     plt.grid()
     plt.savefig(Figure_name+'(b).png')
-    plt.show()
     print(f'These two figures have been saved in {Figure_name}(a)(b).png')
     
