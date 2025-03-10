@@ -19,7 +19,7 @@ Install the required Python packages:
 ```
 
 ## 2. Repository:
-We summarize a list of execution files for plotting figured presented in simulation, tennis data and horce-racing data. To reproduce our numerical results, you just need to execute the following code in the correponding folder:
+We provide a list of executable files for plotting the figures presented in the simulation, tennis data, and horse racing data. To reproduce our numerical results, simply execute the following code in the corresponding directory:
 ```bash
 
 python "Figure1.py" # In Tennis
