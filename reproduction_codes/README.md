@@ -31,7 +31,7 @@ python "FigureS3.py" # In HorceRacing
 
 ### 2.1. Demonstration  
 
-#### **Simulation**  
+#### **Synthetic Data**  
 This experiment verifies the uniform consistency of the maximum likelihood estimator (MLE) in the PlusDC model using simulated data, considering both the NURHM and HSBM random hypergraph models.  
 
 📌 **To run:** Execute **FigureS1.py**  
@@ -48,30 +48,30 @@ This experiment verifies the uniform consistency of the maximum likelihood estim
 ---
 
 #### **Tennis**  
-This experiment examines the aging effect on tennis players and constructs a dynamic "ability table" for the top 10 players in history. After preprocessing the data, we select the optimal combination of Gaussian bases using the BIC criterion to model the aging effect and compare the results with the standard BT model.  
+This experiment examines the age effect on tennis players and constructs a dynamic "ability table" for the top 10 players in history. After preprocessing the data, we select the optimal combination of Gaussian radial basis functions (RBFs) with different location and scale parameters using the BIC criterion to model the age effect and compare the results with the standard BT model.  
 
 📌 **To run:**  
-- Execute **Figure5.py** to determine the optimal Gaussian basis.  
-- Execute **Figure1.py** to generate the "dynamic ability table."  
+- Execute **Figure5.py** to determine the optimal Gaussian RBFs.  
+- Execute **Figure1.py** to generate the "dynamic ability table".   
 
 - **Figure5.py**:  
-  - Tests 64 candidate Gaussian basis combinations.  
+  - Tests 64 candidate models using subsets of all Gaussian RBFs.  
   - Computes basis coefficients using the PlusDC model.  
   - Selects the optimal combination using the BIC criterion.  
   - Plots and saves:  
     - *Figure5(a).png* (Optimal bases)  
-    - *Figure5(b).png* (Aging effect function)  
-  - Compares player rankings from the PlusDC and BT models, saving results in *Figure5(c).csv*.  
+    - *Figure5(b).png* (Estimated age effect)  
+  - Compares player rankings obtained from the PlusDC and BT models, saving results in *Figure5(c).csv*.  
 
 - **Figure1.py**:  
-  - Uses the optimal bases (from **Figure5.py**) to fit the PlusDC model.  
-  - Integrates player birthdates to generate the "dynamic ability table."  
+  - Uses the selected basis functions (from **Figure5.py**) to fit the PlusDC model.  
+  - Integrates player birthdates to generate the "dynamic ability table".  
   - Saves the results as *Figure1.png*.  
 
 ---
 
 #### **Horse Racing**  
-This experiment investigates the impact of actual weight, draw position, and public belief in horse racing. We evaluate different covariate combinations by computing log-likelihood, AIC, and BIC, comparing results against the standard PL model. Additionally, we conduct k-fold cross-validation to assess predictive performance.  
+This experiment investigates the incorporation of actual weight, draw position, and public belief in horse racing predictions using the PlusDC model. We evaluate different covariate combinations by computing log-likelihood, AIC, and BIC, and compare the results against the standard PL model. Additionally, we conduct k-fold cross-validation to assess predictive performance. 
 
 📌 **To run:**  
 - Execute **TableS2.py** to compute model selection criteria.  
@@ -96,30 +96,35 @@ This experiment investigates the impact of actual weight, draw position, and pub
     - *FigureS3(b).png*  
     - *FigureS3(c).png*  
 
-### 2.2.  Algorithm Core Functions
-- **algorithm.py**: This file contains all the details in the alternating maximization algorithm.
-- **generator.py**: This file provides a convenient way to generate hypergraph and edge-dependent covariates.
-### 2.3. Dependencies
-To reproduce the numerical results, we suggest install the the following dependencies in your Python environment
+### 2.2. Algorithm Core Functions  
+- **algorithm.py**: Implements the alternating maximization algorithm.  
+- **generator.py**: Provides functions for generating hypergraphs and edge-dependent covariates.  
+
+### 2.3. Dependencies  
+To reproduce the numerical results, ensure the following dependencies are installed in your Python environment: 
+
 ```bash
 import numpy
 import pandas
 import matplotlib
 import joblib
 
-print(numpy.__version__)  # at least 1.26.4
-print(pandas.__version__)  # at least 2.2.1
-print(matplotlib.__version__)  # at least 3.9.0
-print(joblib.__version__)  # at least 1.4.2
+print(numpy.__version__)  # Required: at least 1.26.4
+print(pandas.__version__)  # Required: at least 2.2.1
+print(matplotlib.__version__)  # Required: at least 3.9.0
+print(joblib.__version__)  # Required: at least 1.4.2
 ```
 
 
 ## 4. Acknowledgements
 
-The tennis data is sourced from [Jeff Sackmann](https://github.com/JeffSackmann/tennis-atp), while the horse racing data is from [Hong Kong horse-racing dataset](https://www.kaggle.com/datasets/gdaley/hkracing).
+We gratefully acknowledge the sources of our datasets:  
+- **Tennis data**: Provided by [Jeff Sackmann](https://github.com/JeffSackmann/tennis-atp).  
+- **Horse racing data**: Sourced from the [Hong Kong horse racing dataset](https://www.kaggle.com/datasets/gdaley/hkracing).  
 
 ---
-If you find this work useful, please consider citing it:
+
+If you find this work useful and would like to cite it, please use the following reference: 
 
 
 
