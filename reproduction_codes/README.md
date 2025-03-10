@@ -51,11 +51,21 @@ This pattern strives to study the impacts from actual weight, draw and public be
 * **FigureS3.py**: This executable file conducts k-fold cross validation, comparing the results with the corresponding performance of the PL model and public belief. The results have been plotted in *FigureS3(a).png*, *FigureS3(b).png* and *FigureS3(c).png*.
 
 ### 2.2.  Algorithm Core Functions
-- **algorithm.py**: This file contains all the details in the alternating maximization algorithm. 
-- **generator.py**: 
+- **algorithm.py**: This file contains all the details in the alternating maximization algorithm.
+- **generator.py**: This file provides a convenient way to generate hypergraph and edge-dependent covariates.
 ### 2.3. Dependencies
 To reproduce the numerical results, we suggest install the the following dependencies in your Python environment
+```bash
+import numpy
+import pandas
+import matplotlib
+import joblib
 
+print(numpy.__version__)  # at least 1.26.4
+print(pandas.__version__)  # at least 2.2.1
+print(matplotlib.__version__)  # at least 3.9.0
+print(joblib.__version__)  # at least 1.4.2
+```
 
 
 ## 4. Acknowledgements
