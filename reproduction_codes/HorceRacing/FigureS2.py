@@ -64,14 +64,20 @@ if __name__ == "__main__":
     d = len(covariate_columns)
     print('\n'*2+"="*10+'Data Analysis'+"="*10)
     print('We fit the PL model and the PlusDC model separately.')
+    print('running......')
 
     # Fit PlusDC,PL
     print('-'*10+'PL model'+'-'*10)
-    u_pl,v_pl = algorithm.AM(T,cov,n,d,P=True,Eu=1e-5,detail=True)
+    u_pl,v_pl = algorithm.AM(T,cov,n,d,P=True,Eu=1e-5)
+    l_pl = algorithm.multi_likelihood(T,cov,u_pl,v_pl)
+    print(f'The log-likelihood of PL model: {l_pl}')
     print('-'*10+'PlusDC model'+'-'*10)
     u_plusDC,v_plusDC = algorithm.AM(T,cov,n,d,
                                     E=1e-5,Eu=1e-5,Ev=1e-12,
                                     I=52,detail=True)
+    likelihood = algorithm.multi_likelihood(T,cov,u_plusDC,v_plusDC)
+    print(f"The log-likelihood of PlusDC model: {likelihood}")
+    print(f"The coefficient of covariates: {v_plusDC}")
     print('\n'+"="*10+'Ranking (PlusDC)'+"="*10)
     plusDC_top10 = np.argsort(u_plusDC)[-10:][::-1]
     u_t10_plusDC = u_plusDC[plusDC_top10]

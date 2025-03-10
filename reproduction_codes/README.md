@@ -1,5 +1,5 @@
-# Reproducibility for the numerical experiments in [Statistical ranking with dynamic covariates](https://arxiv.org/abs/2406.16507)
-This repository contains the source code for the **alternating maximization algorithm** in , designed for statistical ranking with dynamic covariates. 
+# Reproducibility for the numerical experiments
+This repository contains the source codes for all the numerical experiments in [Statistical ranking with dynamic covariates](https://arxiv.org/abs/2406.16507). For a better experience in reproduction, we demonstrate exhaustive illustration as follows:
 
 ## 1. Installation
 Please download the codes file, or install git bash and clone the repository as follows in Command:
