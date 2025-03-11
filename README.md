@@ -1,36 +1,6 @@
 # Reproducibility of the Numerical Experiments
 
 This repository contains the source code for all the numerical experiments in [Statistical ranking with dynamic covariates](https://arxiv.org/abs/2406.16507). For a better reproduction experience, we provide a detailed illustration as follows:
-
-## 1. Installation
-To get started, you can either download the source code directly or use Git to clone the repository.
-
-```bash
-git clone https://github.com/PinjunD/Statistical-ranking-with-dynamic-covariate.git
-cd Statistical-ranking-with-dynamic-covariate
-cd reproductions_codes
-```
-
-Ensure you have Python installed (preferably Python 3.x), then install the required packages using:
-
-```bash
-pip install numpy pandas matplotlib joblib
-```
-
-## 2. Repository:
-This repository provides executable scripts for generating the figures and tables presented in our numerical experiments, including simulations, tennis data, and horse racing data. To reproduce our numerical results, simply execute the following code in the corresponding directory:
-
-```bash
-
-python "Figure1.py" # In Tennis
-python "Figure5.py" # In Tennis
-python "FigureS1.py" # In Simulation
-python "TableS2.py" # In HorseRacing
-python "FigureS2.py" # In HorseRacing
-python "FigureS3.py" # In HorseRacing
-```
-
-### 2.1. Demonstration  
 ```bash
 Statistical-ranking-with-dynamic-covariate/
 │
@@ -60,6 +30,35 @@ Statistical-ranking-with-dynamic-covariate/
 │
 └── README.md
 ```
+## 1. Installation
+To get started, you can either download the source code directly or use Git to clone the repository.
+
+```bash
+git clone https://github.com/PinjunD/Statistical-ranking-with-dynamic-covariate.git
+cd Statistical-ranking-with-dynamic-covariate
+cd reproductions_codes
+```
+
+Ensure you have Python installed (preferably Python 3.x), then install the required packages using:
+
+```bash
+pip install numpy pandas matplotlib joblib
+```
+
+## 2. Repository:
+This repository provides executable scripts for generating the figures and tables presented in our numerical experiments, including simulations, tennis data, and horse racing data. To reproduce our numerical results, simply execute the following code in the corresponding directory:
+
+```bash
+
+python "Figure1.py" # In Tennis
+python "Figure5.py" # In Tennis
+python "FigureS1.py" # In Simulation
+python "TableS2.py" # In HorseRacing
+python "FigureS2.py" # In HorseRacing
+python "FigureS3.py" # In HorseRacing
+```
+
+### 2.1. Demonstration  
 #### **Synthetic Data**  
 This experiment verifies the uniform consistency of the maximum likelihood estimator (MLE) in the PlusDC model using simulated data, considering both the NURHM and HSBM random hypergraph models.  
 
