@@ -1,45 +1,131 @@
-# [Statistical ranking with dynamic covariates](https://arxiv.org/abs/2406.16507)<br>
+# Reproducibility of the Numerical Experiments
 
-## Installation 
-Please download the codes file, or install git bash and clone the repository as follows in Command:
+This repository contains the source code for all the numerical experiments in [Statistical ranking with dynamic covariates](https://arxiv.org/abs/2406.16507). For a better reproduction experience, we provide a detailed illustration as follows:
+
+## 1. Installation
+To get started, you can either download the source code directly or use Git to clone the repository.
 
 ```bash
 git clone https://github.com/PinjunD/Statistical-ranking-with-dynamic-covariate.git
 cd Statistical-ranking-with-dynamic-covariate
+cd reproductions_codes
 ```
 
-After that, you should proceed to install the fundamental packages for Python:
+Ensure you have Python installed (preferably Python 3.x), then install the required packages using:
+
 ```bash
--pip install numpy
--pip install pandas
--pip install matplotlib
--pip install joblib
--pip install scipy
--pip install scikit-learn
+pip install numpy pandas matplotlib joblib
 ```
 
-## Structure
-- **data**: This folder contains simulation results, as well as tennis and horse racing data. 
-- **image**: This folder includes the figures from the simulation and real data analysis.
-- **package**: This folder showcases the algorithm and synthetic data generator introduced in our paper.
-- **video**: This folder contains two visualized videos that showcase the dynamic top-10 rankings derived from tennis data.
-- **Ease for figures**: This folder provides a convenient way to reproduce all the figures in our paper. 
-- **other files:**
-  - **illustration.ipynb**: This file introduces a specific example to demonstrate our methods.
-  - **simulation.ipynb**: This file details the process of simulating synthetic data.
-  - **tennis.ipynb**: This file outlines the process of analyzing tennis data.
-  - **horse racing.ipynb**: This file explains the process of analyzing horse racing data.
+## 2. Repository:
+This repository provides executable scripts for generating the figures and tables presented in our numerical experiments, including simulations, tennis data, and horse racing data. To reproduce our numerical results, simply execute the following code in the corresponding directory:
 
-## Instruction
-- You can open the *illustration.ipynb* file to gain a comprehensive understanding of the *package*, which includes some basic function, generator and algorithm.
-- The *simulation.ipynb* contains conclusive numerical experiments. Specifically, we study the convergence rate of parameters, optimization algorithm and a tiny goodness-of-fit test.
-- The part of real data analysis have presented in *horse racing.ipynb* and *tennis.ipynb* files, which include all the processes described in our paper.
-## Acknowledgements
+```bash
 
-It's worth noting that the tennis data is sourced from [Jeff Sackmann](https://github.com/JeffSackmann/tennis-atp), while the horse racing data is from [Hong Kong horse-racing dataset](https://www.kaggle.com/datasets/gdaley/hkracing).
+python "Figure1.py" # In Tennis
+python "Figure5.py" # In Tennis
+python "FigureS1.py" # In Simulation
+python "TableS2.py" # In HorseRacing
+python "FigureS2.py" # In HorseRacing
+python "FigureS3.py" # In HorseRacing
+```
+
+### 2.1. Demonstration  
+
+#### **Synthetic Data**  
+This experiment verifies the uniform consistency of the maximum likelihood estimator (MLE) in the PlusDC model using simulated data, considering both the NURHM and HSBM random hypergraph models.  
+
+📌 **To run:** Execute **FigureS1.py**  
+
+- **FigureS1.py**:  
+  - Generates a hypergraph with edge-dependent covariates under a specific setting.  
+  - Computes the $\ell_\infty$-loss between the estimator and true parameters.  
+  - Runs 300 repetitions and saves the results as:  
+    - *FigureS1(a).png*  
+    - *FigureS1(b).png*  
+    - *FigureS1(c).png*  
+    - *FigureS1(d).png*  
 
 ---
-If you find our work beneficial for your research, we kindly ask you to consider citing our paper as follows:
+
+#### **Tennis**  
+This experiment examines the age effect on tennis players and constructs a dynamic "ability table" for the top 10 players in history. After preprocessing the data, we select the optimal combination of Gaussian radial basis functions (RBFs) with different location and scale parameters using the BIC criterion to model the age effect and compare the results with the standard BT model.  
+
+📌 **To run:**  
+- Execute **Figure5.py** to determine the optimal Gaussian RBFs.  
+- Execute **Figure1.py** to generate the "dynamic ability table".   
+
+- **Figure5.py**:  
+  - Tests 64 candidate models using subsets of all Gaussian RBFs.  
+  - Computes basis coefficients using the PlusDC model.  
+  - Selects the optimal combination using the BIC criterion.  
+  - Plots and saves:  
+    - *Figure5(a).png* (Optimal bases)  
+    - *Figure5(b).png* (Estimated age effect)  
+  - Compares player rankings obtained from the PlusDC and BT models, saving results in *Figure5(c).csv*.  
+
+- **Figure1.py**:  
+  - Uses the selected basis functions (from **Figure5.py**) to fit the PlusDC model.  
+  - Integrates player birthdates to generate the "dynamic ability table".  
+  - Saves the results as *Figure1.png*.  
+
+---
+
+#### **Horse Racing**  
+This experiment investigates the incorporation of actual weight, draw position, and public belief in horse racing predictions using the PlusDC model. We evaluate different covariate combinations by computing log-likelihood, AIC, and BIC, and compare the results against the standard PL model. Additionally, we conduct k-fold cross-validation to assess predictive performance. 
+
+📌 **To run:**  
+- Execute **TableS2.py** to compute model selection criteria.  
+- Execute **FigureS2.py** to compare the PlusDC model with the PL model.  
+- Execute **FigureS3.py** for k-fold cross-validation and performance comparison.  
+
+- **TableS2.py**:  
+  - Computes log-likelihood, AIC, and BIC for all covariate combinations.  
+  - Saves results in *TableS2.csv*.  
+
+- **FigureS2.py**:  
+  - Compares results from the PlusDC and PL models.  
+  - Saves outputs as:  
+    - *FigureS2(right).csv*  
+    - *FigureS2(left).png*  
+
+- **FigureS3.py**:  
+  - Conducts k-fold cross-validation.  
+  - Compares predictive performance with the PL model and public belief.  
+  - Saves plots as:  
+    - *FigureS3(a).png*  
+    - *FigureS3(b).png*  
+    - *FigureS3(c).png*  
+
+### 2.2. Algorithm Core Functions  
+- **algorithm.py**: Implements the alternating maximization algorithm.  
+- **generator.py**: Provides functions for generating hypergraphs and edge-dependent covariates.  
+
+### 2.3. Dependencies  
+To reproduce the numerical results, ensure the following dependencies are installed in your Python environment: 
+
+```bash
+import numpy
+import pandas
+import matplotlib
+import joblib
+
+print(numpy.__version__)  # Required: at least 1.26.4
+print(pandas.__version__)  # Required: at least 2.2.1
+print(matplotlib.__version__)  # Required: at least 3.9.0
+print(joblib.__version__)  # Required: at least 1.4.2
+```
+
+
+## 4. Acknowledgements
+
+We gratefully acknowledge the sources of our datasets:  
+- **Tennis data**: Provided by [Jeff Sackmann](https://github.com/JeffSackmann/tennis-atp).  
+- **Horse racing data**: Sourced from the [Hong Kong horse racing dataset](https://www.kaggle.com/datasets/gdaley/hkracing).  
+
+---
+
+If you find this work useful and would like to cite it, please use the following reference: 
 
 
 
