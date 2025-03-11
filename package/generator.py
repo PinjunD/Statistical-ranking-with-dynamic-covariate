@@ -1,5 +1,14 @@
 import numpy as np
+
+# Some initial configurations
+
 def order(R):
+    """ Generate the comparison results
+    Args:
+        R (list): A list of items that are involved in the comparison.
+    Returns :
+        o (list): A list of items rearranged in order of rank.
+    """
     m = len(R)
     o = [m-1 for _ in range(m)]
     for i in range(m-1):
@@ -10,17 +19,42 @@ def order(R):
         R[ind] = 0
     return o
 def u_uniform(n):
+    """Generate the intrinsic score from uniform distribution.
+    Args:
+        n (int): The number of items.
+    Returns :
+        u (np.array): The intrinsic score of items. (u.shape = n)
+    """
     u = np.random.uniform(-0.5, 0.5, n)
     u += - np.mean(u)
     return u
 def x_center(n,d):
+    """Generate the covariate center from uniform distribution.
+    Args:
+        n (int): The number of items.
+        d (int): The dimension of covariates.
+    Returns :
+        x (np.array): The covariate center of items. (u.shape = n,d)
+    """
     x = np.random.uniform(-0.5, 0.5, (n,d))
     x += - np.mean(x)
     return x
 def x_generator(x):
+    """Generate the covariate center from uniform distribution.
+    Args:
+        x (int): The number of items.
+        d (int): The dimension of covariates.
+    Returns :
+        x (np.array): The intrinsic score of items. (u.shape = n,d)
+    """
     m, d = x.shape
     variables = np.random.normal(0,1,size=(m,d))
     return variables
+
+
+""" Define the 
+
+"""
 normalize = lambda n: 25*n+4*np.log(n)**3
 p_in1 =lambda n: 5*n/normalize(n)
 p_in2 =lambda n: 20*n/normalize(n)
