@@ -34,7 +34,7 @@ def printf(u_infty,v_infty,repeat,nn,name):
         repeat_str = str(repeat)+'th'
     lines = '-'*10+'\n'
     print1 = f'The {repeat_str} repetition of {name}: number of nodes:{nn}.\n'
-    print2 = f'u_infty:{u_infty}, v_infty:{v_infty}.'
+    print2 = f'u_infty:{u_infty}, v_infty:{v_infty}.\n'
     screen = lines + print1 + print2
     print(screen)
 
