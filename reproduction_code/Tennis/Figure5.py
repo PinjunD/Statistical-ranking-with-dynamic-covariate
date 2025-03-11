@@ -9,7 +9,6 @@ from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
 from matplotlib import rc
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import algorithm
 
 rc('text', usetex=True)
@@ -39,7 +38,7 @@ if __name__ == "__main__":
     print('In this program, we investigate the age effect among tennis players using PlusDC model.')
     time.sleep(2)
     print('\n'+"="*10+'Data Loading'+"="*10)
-    print('Loading data from \'tennis(preprocessed).csv\'...')
+    print('Loading data from \'tennis(preprocessed).csv\'......')
     df = pd.read_csv('tennis(preprocessed).csv',low_memory=False)
     ## players ID
     players = df[['winner_name','loser_name']]
@@ -61,15 +60,15 @@ if __name__ == "__main__":
     print('\n'+"="*10+'Data analysis'+"="*10)
     ## basis functions
     print('We construct covariates using Gaussian radial basis functions defined as:'
-          '\nf(t;a,ρ) = exp{-ρ(t - a)^2}, where parameters (a,ρ) ∈ {25,30,35}×{0.01,0.03}')
+          '\nf(t;a,ρ) = exp{-ρ(t - a)^2}, where the parameters (a,ρ) are taken from the set {25,30,35}×{0.01,0.03}')
     A = [25,30,35]
     Lamb = [0.01, 0.03]
     parameters = [(a,lamb) for a in A for lamb in Lamb]
     gauss_kernel = lambda x,a,lamb: np.exp(-lamb*(x-a)**2)
     gauss_kernel_set = lambda x: np.array([gauss_kernel(x,a,lamb) for (a,lamb) in parameters])
     cov = [gauss_kernel_set(age).T for age in Age]
-    print('Next, we calculate the Bayesian Information Criterion (BIC) corresponding to each combination of covariates, totaling 64 candidates.')
-    print('Running...')
+    print('Then, we calculate the BIC corresponding to each covariates\' combination. (64 candidates)')
+    print('Running......')
     manager = Manager()
     shared_list = manager.list() 
     # get_subset
@@ -78,14 +77,13 @@ if __name__ == "__main__":
     subset = get_subset(6)
     res = Parallel(n_jobs=cpu_cores)(delayed(get_BIC)(T,cov,subset[i],N,n,shared_list) for i in range(len(subset)))
     s = subset[np.argmin(res)]
-    print('Complete!')
-    print('\nWe have selected the optimal basis functions based on BIC.')
+    print('\nWe have selected the best basis functions based on BIC.')
     print('(a,ρ) ∈ {(25,0.01),(25,0.03),(30,0.01),(35,0.01)}')
     time.sleep(1)
 
-    print('Next, we compare the rankings obtained from the PlusDC model and the BT model.')
+    print('Then, we compare the ranking from PlusDC and BT.')
     time.sleep(1)
-    print('Running...')
+    print('Running......')
     ## fit PlusDC,BT
     d = len(s)
     X = [x[:,s] for x in cov]
@@ -122,12 +120,12 @@ if __name__ == "__main__":
     })
     time.sleep(2)
     print(df)
-    print(f'The results have been saved in the file {Figure_name}.csv')
+    print(f'The results have been saved in {Figure_name}.csv')
     df.to_csv(Figure_name+'(c).csv',index=False)
 
 
     time.sleep(3)
-    print('Finally, we plot the selected basis functions along with the age effect.') 
+    print('At last, we plot the selected basis functions and age effect.') 
     
     # plot basis function
     x = np.linspace(8,64,100)
@@ -176,6 +174,6 @@ if __name__ == "__main__":
     rc('text', usetex=True)
     rc('font', family='serif')
     plt.grid()
-    plt.savefig(f'results/{Figure_name}(b).png')
+    plt.savefig(Figure_name+'(b).png')
     print(f'These two figures have been saved in {Figure_name}(a)(b).png')
     

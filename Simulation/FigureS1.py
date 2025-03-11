@@ -143,7 +143,7 @@ if __name__ == '__main__':
         plt.yticks(y_ticks[j], size=sz)
         plt.grid()
         plt.savefig(save[j]+'.png')
-    print(f'We have saved the HSBM results as {Figure_name}(c).png and {Figure_name}(d).png\n')
+    print(f'We have saved the HSBM results as {Figure_name}(c).png and {Figure_name}(d).png.\n')
 
     t2 = time.time()
     print(f'Total Time:{int(t2-t1)}s')

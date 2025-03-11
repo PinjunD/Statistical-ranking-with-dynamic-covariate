@@ -4,11 +4,12 @@
 import os
 import sys
 import time
-import algorithm
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rc
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import algorithm
 rc('text', usetex=True)
 rc('font', family='serif')
 sz = 36
@@ -18,10 +19,10 @@ Figure_name = os.path.basename(__file__)[:-3]
 
 # loading data
 if __name__ == "__main__":
-    print('In this program, we plot the tennis players\' log-scores varying from times.')
+    print('In this program, we plot the log-scores of tennis players over time.')
     time.sleep(2)
     print('\n'+"="*10+'Data Loading'+"="*10)
-    print('Loading data from \'tennis(preprocessed).csv\'......')
+    print('Loading data from \'tennis(preprocessed).csv\'...')
     df = pd.read_csv('tennis(preprocessed).csv',low_memory=False)
     ## players ID
     players = df[['winner_name','loser_name']]
@@ -41,7 +42,7 @@ if __name__ == "__main__":
 
     # Data analysis
     print('\n'+"="*10+'Data analysis'+"="*10)
-    print('We have selected the best basis functions based on BIC.')
+    print('We have selected the optimal basis functions based on the BIC.')
     print('(a,ρ) ∈ {(25,0.01),(25,0.03),(30,0.01),(35,0.01)}')
     A = [25,30,35]
     Lamb = [0.01, 0.03]
@@ -59,7 +60,7 @@ if __name__ == "__main__":
     plusDC_top10 = np.argsort(u_plusDC)[-10:][::-1]
     u_t10_plusDC = u_plusDC[plusDC_top10]
     top_player = []
-    print('Then, we fit PlusDC and find the top-10 players')
+    print('Next, we fit the PlusDC model and identify the top 10 players.')
     print("="*20)
     for i,index in enumerate(plusDC_top10):
         player_name = [key for key, value in playerID.items() if value == index][0]
@@ -74,7 +75,7 @@ if __name__ == "__main__":
     players_information = {}
 
     ## load birthday information
-    print('Loading birthday information......')
+    print('Loading birthday information...')
     with open('birthday.txt','r') as f:
         lines = f.readlines()[:total_num]
     for line,player in zip(lines,players):
@@ -92,7 +93,7 @@ if __name__ == "__main__":
 
         players_information[player] = temp
     print('Complete!')
-    print('Plot......')
+    print('Plot...')
     fig,ax = plt.subplots(figsize=(90,30))
     sz = 105
     ax.set_xlabel('Year', size = sz)
@@ -131,8 +132,8 @@ if __name__ == "__main__":
 
 
     plt.grid()
-    plt.savefig(Figure_name+'.png')
+    plt.savefig(f'results/{Figure_name}.png')
     print("Complete!")
     time.sleep(1)
-    print(f'We have saved the results as {Figure_name}.png')
+    print(f'We have saved the results as {Figure_name}.png.')
         

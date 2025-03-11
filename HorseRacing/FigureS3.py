@@ -71,11 +71,11 @@ def horse_cross_validation(T,cov,n,d,subset,CV_filename,shared_list):
     print_progress_bar(len(shared_list),63)
 
 if __name__ == "__main__":
-    print('Finally, we investigate whether the PlusDC model improves prediction.')
+    print('Finally, we examine whether the PlusDC model enhances prediction accuracy.')
     time.sleep(2)
     # loading data
     print('\n'+"="*10+'Data Loading'+"="*10)
-    print('Loading data from \'runs(preprocessed).csv\'......')
+    print('Loading data from \'runs(preprocessed).csv\'...')
     covariate_columns = ['Act. Wt.','Dr.','Win Odds']
     name_columns = 'Horse'
     df = pd.read_csv('runs(preprocessed).csv',index_col='race_id',low_memory=False)
@@ -133,9 +133,9 @@ if __name__ == "__main__":
 
     print('We compute the mean cross-entropy(log-likelihood) for '
           '\nthe top-1 observation, the top-3 observations, and all observations,'
-          '\ncomparing them with the corresponding performance of the PL model and public belief.')
+          '\ncomparing these results with the corresponding performance of the PL model and public belief.')
     time.sleep(1)
-    print('running......')
+    print('Running...')
     CV_filename = 'horse_KFCV.txt'
     manager = Manager()
     shared_list = manager.list() 
@@ -145,8 +145,7 @@ if __name__ == "__main__":
     time.sleep(3)
     
     ### Loading the results in above step.
-    print('\n'+"="*10+'Data Arraging'+"="*10)
-    print('Finally, we create box plots based on these results.')
+    print('Finally, we create box plots to visualize these results.')
     Data = []
     with open(CV_filename,'r') as file:
         for line in file:
@@ -182,4 +181,4 @@ if __name__ == "__main__":
             patch.set_edgecolor('black')
 
         plt.savefig(Figure_name+save_name[j]+'.png')
-        print(f'The figure also have been saved in {Figure_name+save_name[j]}.png')
+        print(f'The figure has also been saved as {Figure_name + save_name[j]}.png.')

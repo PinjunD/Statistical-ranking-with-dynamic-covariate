@@ -37,13 +37,13 @@ def get_results(T,cov,s,N,n,shared_list):
     return [s,likelihood,AIC,BIC]
 
 if __name__ == "__main__":
-    print('In this program, we investigate the covariates\' impact for horse-racing results.')
+    print('In this program, we investigate the impact of covariates on horse racing results.')
     time.sleep(3)
     print('Specifically, we consider three factors to explain the internal scores of horses:')
     str_list1 = [
-        'Actual weight: the weight a horse carries in a competition.', 
-        'Draw: the post position number of a horse in a race.', 
-        'Public belief:  the winning probability derived from the last-minute win odds before the competition starts.'
+        'Actual weight: The weight that a horse carries during a competition.', 
+        'Draw: The post position number assigned to a horse in a race.', 
+        'Public belief: The winning probability derived from the final win odds shortly before the competition begins.'
         ]
     for i in range(3):
         time.sleep(1)
@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
     # loading data
     print('\n'+"="*10+'Data Loading'+"="*10)
-    print('To begin with, we load the data from \'runs(preprocessed).csv\'')
+    print('To begin with, we load the data from \'runs(preprocessed).csv\'...')
     covariate_columns = ['Act. Wt.','Dr.','Win Odds']
     name_columns = 'Horse'
     df = pd.read_csv('runs(preprocessed).csv',index_col='race_id',low_memory=False)
@@ -93,10 +93,9 @@ if __name__ == "__main__":
 
     # models
     print('\n'*2+"="*10+'Data Analysis'+"="*10)
-    print('We use PlusDC to fit the data through different combinations'
-        ' of the three covariates. ')
+    print('We use PlusDC to fit the data using various combinations of the three covariates. ')
     time.sleep(1)
-    print('running......')
+    print('Running...')
     manager = Manager()
     shared_list = manager.list() 
     # get_subset
@@ -106,9 +105,9 @@ if __name__ == "__main__":
 
     results = Parallel(n_jobs=cpu_cores)(delayed(get_results)(T,cov,ss,N,n,shared_list) for ss in subset)
     print('\n')
-    print('Finally, we calculate the corresponding log-likelihood, AIC, BIC')
+    print('Finally, we calculate the corresponding log-likelihood, AIC, and BIC.')
     time.sleep(3)
-    print('Here, [i_1,i_2,i_3] represents the PlusDC model incorporating the $t$th covariate if i_t = 1.')
+    print('Here, (i_1,i_2,i_3) represents the PlusDC model incorporating the $t$th covariate if i_t = 1.')
     time.sleep(3)
     print('The PL model, namely (0,0,0), is a special case of PlusDC.')
     Subset, likelihood, AIC_, BIC_ = [],[],[],[]
@@ -132,6 +131,6 @@ if __name__ == "__main__":
         'BIC': BIC_,
     })
     print(df)
-    print(f'The results have been saved in {Figure_name}.csv')
+    print(f'The results have been saved in {Figure_name}.csv.')
     df.to_csv(Figure_name+'.csv',index=False)
         

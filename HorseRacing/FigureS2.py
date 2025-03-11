@@ -25,7 +25,7 @@ if __name__ == "__main__":
     time.sleep(3)
     # loading data
     print('\n'+"="*10+'Data Loading'+"="*10)
-    print('Loading the data from \'runs(preprocessed).csv\'......')
+    print('Loading data from \'runs(preprocessed).csv\'...')
     covariate_columns = ['Act. Wt.','Dr.','Win Odds']
     name_columns = 'Horse'
     df = pd.read_csv('runs(preprocessed).csv',index_col='race_id',low_memory=False)
@@ -63,19 +63,18 @@ if __name__ == "__main__":
     N = len(T)
     d = len(covariate_columns)
     print('\n'*2+"="*10+'Data Analysis'+"="*10)
-    print('We fit the PL model and the PlusDC model separately.')
-    print('running......')
+    print('We fit the PL model and the PlusDC model independently.')
 
     # Fit PlusDC,PL
     print('-'*10+'PL model'+'-'*10)
-    print('running......')
+    print('Running...')
     u_pl,v_pl = algorithm.AM(T,cov,n,d,P=True,Eu=1e-5)
     l_pl = algorithm.multi_likelihood(T,cov,u_pl,v_pl)
 
     
     print(f'The log-likelihood of PL model: {l_pl}')
     print('-'*10+'PlusDC model'+'-'*10)
-    print('running......')
+    print('Running...')
     u_plusDC,v_plusDC = algorithm.AM(T,cov,n,d,
                                     E=1e-5,Eu=1e-5,Ev=1e-12,
                                     I=52)
@@ -130,7 +129,7 @@ if __name__ == "__main__":
     print('\n')
     print(df)
     df.to_csv(Figure_name+'(right).csv')
-    print(f'The results have been saved in {Figure_name}(right).csv')
+    print(f'The results have been saved in {Figure_name}(right).csv.')
     time.sleep(3)
 
 
@@ -151,4 +150,4 @@ if __name__ == "__main__":
     ax.set_ylabel(r'$\hat{\bm{u}}$'+" (PlusDC)",size = sz)
 
     plt.savefig(Figure_name+'(left).png')
-    print(f'The figure also have been saved in {Figure_name}(left).png')
+    print(f'The figure has also been saved as {Figure_name}(left).png.')
