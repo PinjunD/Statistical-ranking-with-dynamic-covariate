@@ -25,9 +25,9 @@ This repository provides executable scripts for generating the figures and table
 python "Figure1.py" # In Tennis
 python "Figure5.py" # In Tennis
 python "FigureS1.py" # In Simulation
-python "TableS2.py" # In HorceRacing
-python "FigureS2.py" # In HorceRacing
-python "FigureS3.py" # In HorceRacing
+python "TableS2.py" # In HorseRacing
+python "FigureS2.py" # In HorseRacing
+python "FigureS3.py" # In HorseRacing
 ```
 
 ### 2.1. Demonstration  
