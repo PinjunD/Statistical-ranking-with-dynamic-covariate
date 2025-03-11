@@ -8,16 +8,19 @@ import itertools
 from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
 from matplotlib import rc
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import algorithm
+cpu_cores = os.cpu_count()
 
 rc('text', usetex=True)
 rc('font', family='serif')
 # pd.set_option('future.no_silent_downcasting', True)
 sz = 36
 Figure_name = os.path.basename(__file__)[:-3]
-cpu_cores = os.cpu_count()
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0,project_root)
+from package import algorithm
+
+data_file_path = lambda x: os.path.join(project_root, 'data', x)
+save_path = lambda x: os.path.join(project_root, 'results', f'{Figure_name}{x}')
 
 def print_progress_bar(iteration, total, length=40):
     percent = (iteration / total)
@@ -39,8 +42,8 @@ if __name__ == "__main__":
     print('In this program, we investigate the age effect among tennis players using PlusDC model.')
     time.sleep(2)
     print('\n'+"="*10+'Data Loading'+"="*10)
-    print('Loading data from \'tennis(preprocessed).csv\'...')
-    df = pd.read_csv('tennis(preprocessed).csv',low_memory=False)
+    print('Loading data from \'data\\tennis(preprocessed).csv\'...')
+    df = pd.read_csv(data_file_path('tennis(preprocessed).csv'),low_memory=False)
     ## players ID
     players = df[['winner_name','loser_name']]
     counts = pd.Series(players.values.ravel()).value_counts()
@@ -123,7 +126,7 @@ if __name__ == "__main__":
     time.sleep(2)
     print(df)
     print(f'The results have been saved in the file {Figure_name}.csv')
-    df.to_csv(Figure_name+'(c).csv',index=False)
+    df.to_csv(save_path('(c).csv'),index=False)
 
 
     time.sleep(3)
@@ -149,7 +152,7 @@ if __name__ == "__main__":
     ax.legend(title='Selected $(a, \lambda)$', prop={'size': sz},\
             title_fontsize=sz, loc='upper right')
     plt.grid()
-    plt.savefig(Figure_name +'(a).png')
+    plt.savefig(save_path('(a).png'))
 
 
 
@@ -176,6 +179,6 @@ if __name__ == "__main__":
     rc('text', usetex=True)
     rc('font', family='serif')
     plt.grid()
-    plt.savefig(f'results/{Figure_name}(b).png')
+    plt.savefig(save_path('(b).png'))
     print(f'These two figures have been saved in {Figure_name}(a)(b).png')
     

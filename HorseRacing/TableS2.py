@@ -8,14 +8,19 @@ import itertools
 from joblib import Parallel, delayed
 import matplotlib.pyplot as plt
 from matplotlib import rc
+cpu_cores = os.cpu_count()
 
-import algorithm
 rc('text', usetex=True)
 rc('font', family='serif')
 # pd.set_option('future.no_silent_downcasting', True)
 sz = 36
 Figure_name = os.path.basename(__file__)[:-3]
-cpu_cores = os.cpu_count()
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0,project_root)
+from package import algorithm
+
+data_file_path = lambda x: os.path.join(project_root, 'data', x)
+save_path = lambda x: os.path.join(project_root, 'results', f'{Figure_name}{x}')
 
 def print_progress_bar(iteration, total, length=40):
     percent = (iteration / total)
@@ -53,10 +58,10 @@ if __name__ == "__main__":
 
     # loading data
     print('\n'+"="*10+'Data Loading'+"="*10)
-    print('To begin with, we load the data from \'runs(preprocessed).csv\'...')
+    print('To begin with, we load the data from \'data\\runs(preprocessed).csv\'...')
     covariate_columns = ['Act. Wt.','Dr.','Win Odds']
     name_columns = 'Horse'
-    df = pd.read_csv('runs(preprocessed).csv',index_col='race_id',low_memory=False)
+    df = pd.read_csv(data_file_path('runs(preprocessed).csv'),index_col='race_id',low_memory=False)
 
     horseID = {}
     T = []
@@ -132,5 +137,5 @@ if __name__ == "__main__":
     })
     print(df)
     print(f'The results have been saved in {Figure_name}.csv.')
-    df.to_csv(Figure_name+'.csv',index=False)
+    df.to_csv(save_path('.csv'),index=False)
         

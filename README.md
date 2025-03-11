@@ -31,7 +31,35 @@ python "FigureS3.py" # In HorseRacing
 ```
 
 ### 2.1. Demonstration  
-
+```bash
+Statistical-ranking-with-dynamic-covariate/
+│
+├── data/
+│   ├── runs(preprocessed).csv
+│   ├── tennis(preprocessed).csv
+│   └── birthday.txt
+│
+├── package/
+│   ├── __init__.py
+│   ├── algorithm.py
+│   └── generator.py
+│
+├── Simulation/
+│   └── FigureS1.py
+│
+├── HorseRacing/
+│   ├── TableS2.py
+│   ├── FigureS2.py
+│   └── FigureS3.py
+│
+├── Tennis/
+│   ├── Figure1.py
+│   └── Figure5.py
+│
+├── results/
+│
+└── README.md
+```
 #### **Synthetic Data**  
 This experiment verifies the uniform consistency of the maximum likelihood estimator (MLE) in the PlusDC model using simulated data, considering both the NURHM and HSBM random hypergraph models.  
 

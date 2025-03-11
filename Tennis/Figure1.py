@@ -8,13 +8,17 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rc
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import algorithm
+
 rc('text', usetex=True)
 rc('font', family='serif')
 sz = 36
 Figure_name = os.path.basename(__file__)[:-3]
-# pd.set_option('future.no_silent_downcasting', True)
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0,project_root)
+from package import algorithm
+
+data_file_path = lambda x: os.path.join(project_root, 'data', x)
+save_path = lambda x: os.path.join(project_root, 'results', f'{Figure_name}{x}')
 
 
 # loading data
@@ -22,8 +26,8 @@ if __name__ == "__main__":
     print('In this program, we plot the log-scores of tennis players over time.')
     time.sleep(2)
     print('\n'+"="*10+'Data Loading'+"="*10)
-    print('Loading data from \'tennis(preprocessed).csv\'...')
-    df = pd.read_csv('tennis(preprocessed).csv',low_memory=False)
+    print('Loading data from \'data\\tennis(preprocessed).csv\'...')
+    df = pd.read_csv(data_file_path('tennis(preprocessed).csv'),low_memory=False)
     ## players ID
     players = df[['winner_name','loser_name']]
     counts = pd.Series(players.values.ravel()).value_counts()
@@ -39,7 +43,8 @@ if __name__ == "__main__":
     Age = np.array(df[age_columns])
     print('Complete!')
     time.sleep(1)
-
+    
+    os.chdir('results')
     # Data analysis
     print('\n'+"="*10+'Data analysis'+"="*10)
     print('We have selected the optimal basis functions based on the BIC.')
@@ -76,7 +81,7 @@ if __name__ == "__main__":
 
     ## load birthday information
     print('Loading birthday information...')
-    with open('birthday.txt','r') as f:
+    with open(data_file_path('birthday.txt'),'r') as f:
         lines = f.readlines()[:total_num]
     for line,player in zip(lines,players):
         win_age = df[df['winner_name'] == player]['winner_age']
@@ -132,7 +137,7 @@ if __name__ == "__main__":
 
 
     plt.grid()
-    plt.savefig(f'results/{Figure_name}.png')
+    plt.savefig(save_path('.png'))
     print("Complete!")
     time.sleep(1)
     print(f'We have saved the results as {Figure_name}.png.')

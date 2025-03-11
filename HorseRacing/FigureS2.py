@@ -1,17 +1,25 @@
 import os
 import sys
 import time
+from multiprocessing import Manager
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rc
-import algorithm
+cpu_cores = os.cpu_count()
 
 rc('text', usetex=True)
 rc('font', family='serif')
 # pd.set_option('future.no_silent_downcasting', True)
 sz = 36
 Figure_name = os.path.basename(__file__)[:-3]
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0,project_root)
+from package import algorithm
+
+data_file_path = lambda x: os.path.join(project_root, 'data', x)
+save_path = lambda x: os.path.join(project_root, 'results', f'{Figure_name}{x}')
+
 def print_progress_bar(iteration, total, length=40):
     percent = (iteration / total)
     bar_length = int(length * percent)
@@ -25,10 +33,10 @@ if __name__ == "__main__":
     time.sleep(3)
     # loading data
     print('\n'+"="*10+'Data Loading'+"="*10)
-    print('Loading data from \'runs(preprocessed).csv\'...')
+    print('Loading data from \'data\\runs(preprocessed).csv\'...')
     covariate_columns = ['Act. Wt.','Dr.','Win Odds']
     name_columns = 'Horse'
-    df = pd.read_csv('runs(preprocessed).csv',index_col='race_id',low_memory=False)
+    df = pd.read_csv(data_file_path('runs(preprocessed).csv'),index_col='race_id',low_memory=False)
 
     horseID = {}
     T = []
@@ -128,7 +136,7 @@ if __name__ == "__main__":
     })
     print('\n')
     print(df)
-    df.to_csv(Figure_name+'(right).csv')
+    df.to_csv(save_path('(right).csv'))
     print(f'The results have been saved in {Figure_name}(right).csv.')
     time.sleep(3)
 
@@ -149,5 +157,5 @@ if __name__ == "__main__":
     ax.set_xlabel(r'$\hat{\bm{u}}$'+" (PL)",size = sz)
     ax.set_ylabel(r'$\hat{\bm{u}}$'+" (PlusDC)",size = sz)
 
-    plt.savefig(Figure_name+'(left).png')
+    plt.savefig(save_path('(left).png'))
     print(f'The figure has also been saved as {Figure_name}(left).png.')

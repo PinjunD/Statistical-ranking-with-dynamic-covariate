@@ -1,9 +1,9 @@
 import os
+import sys
 from multiprocessing import Manager
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import generator,algorithm
 from matplotlib import rc
 from joblib import Parallel,delayed
 import time
@@ -11,8 +11,16 @@ rc('text', usetex=True)
 rc('font', family='serif')
 # pd.set_option('future.no_silent_downcasting', True)
 sz = 36
-Figure_name = os.path.basename(__file__)[:-3]
 cpu_cores = os.cpu_count()
+Figure_name = os.path.basename(__file__)[:-3]
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0,project_root)
+from package import algorithm,generator
+
+data_file_path = lambda x: os.path.join(project_root, 'data', x)
+save_path = lambda x: os.path.join(project_root, 'results', f'{Figure_name}{x}')
+
+
 np.random.seed(100)
 
 def printf(u_infty,v_infty,repeat,nn,name):
@@ -91,7 +99,7 @@ if __name__ == '__main__':
     y_ticks = [[0.2+0.1*i for i in range(8)],[0.01*i for i in range(5)]]
     plt.rcParams['text.usetex'] = True
     plt.rcParams['text.latex.preamble'] = r'\usepackage{bm}'
-    save = [Figure_name+'(a)',Figure_name+'(b)']
+    save = ['(a)','(b)']
     title_NURHM = [r'NURHM: $\widehat{\bm{u}}$ error', 
                 r'NURHM: $\widehat{\bm{v}}$ error']
     label_y = [r"$\|\widehat{\bm{u}} - \bm{{u}}^*\|_\infty$", 
@@ -108,7 +116,7 @@ if __name__ == '__main__':
         plt.xticks(range(200, 1200, 200), size=sz)
         plt.yticks(y_ticks[j], size=sz)
         plt.grid()
-        plt.savefig(save[j]+'.png')
+        plt.savefig(save_path(f'{save[j]}.png'))
     print(f'We have saved the NURHM results as {Figure_name}(a).png and {Figure_name}(b).png.\n')
 
     # HSBM
@@ -128,7 +136,7 @@ if __name__ == '__main__':
         T.append(np.std(data,axis = 0))
     S,T = np.array(S),np.array(T)
     ## plot
-    save = [Figure_name+'(c)',Figure_name+'(d)']
+    save = ['(c)','(d)']
     title_HSBM = [r'HSBM: $\widehat{\bm{u}}$ error', 
                 r'HSBM: $\widehat{\bm{v}}$ error']
     for j in range(2):
@@ -142,7 +150,7 @@ if __name__ == '__main__':
         plt.xticks(range(200, 1200, 200), size=sz)
         plt.yticks(y_ticks[j], size=sz)
         plt.grid()
-        plt.savefig(save[j]+'.png')
+        plt.savefig(save_path(f'{save[j]}.png'))
     print(f'We have saved the HSBM results as {Figure_name}(c).png and {Figure_name}(d).png.\n')
 
     t2 = time.time()
