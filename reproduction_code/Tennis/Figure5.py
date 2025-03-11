@@ -13,7 +13,7 @@ import algorithm
 
 rc('text', usetex=True)
 rc('font', family='serif')
-pd.set_option('future.no_silent_downcasting', True)
+# pd.set_option('future.no_silent_downcasting', True)
 sz = 36
 Figure_name = os.path.basename(__file__)[:-3]
 cpu_cores = os.cpu_count()

@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 from matplotlib import rc
 rc('text', usetex=True)
 rc('font', family='serif')
-pd.set_option('future.no_silent_downcasting', True)
 sz = 36
 Figure_name = os.path.basename(__file__)[:-3]
+# pd.set_option('future.no_silent_downcasting', True)
 
 
 # loading data
