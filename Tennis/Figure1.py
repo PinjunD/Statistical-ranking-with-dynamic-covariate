@@ -11,6 +11,7 @@ from matplotlib import rc
 
 rc('text', usetex=True)
 rc('font', family='serif')
+# pd.set_option('future.no_silent_downcasting', True)
 sz = 36
 Figure_name = os.path.basename(__file__)[:-3]
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -19,7 +20,6 @@ from package import algorithm
 
 data_file_path = lambda x: os.path.join(project_root, 'data', x)
 save_path = lambda x: os.path.join(project_root, 'results', f'{Figure_name}{x}')
-
 
 # loading data
 if __name__ == "__main__":
@@ -44,7 +44,6 @@ if __name__ == "__main__":
     print('Complete!')
     time.sleep(1)
     
-    os.chdir('results')
     # Data analysis
     print('\n'+"="*10+'Data analysis'+"="*10)
     print('We have selected the optimal basis functions based on the BIC.')
@@ -137,8 +136,8 @@ if __name__ == "__main__":
 
 
     plt.grid()
-    plt.savefig(save_path('.png'))
+    plt.savefig(save_path('.pdf'))
     print("Complete!")
     time.sleep(1)
-    print(f'We have saved the results as {Figure_name}.png.')
+    print(f'We have saved the results as {Figure_name}.pdf.')
         

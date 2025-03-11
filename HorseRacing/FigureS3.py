@@ -187,5 +187,5 @@ if __name__ == "__main__":
             patch.set_facecolor(color)
             patch.set_edgecolor('black')
 
-        plt.savefig(save_path(f'{save_name[j]}.png'))
-        print(f'The figure has also been saved as {Figure_name + save_name[j]}.png.')
+        plt.savefig(save_path(f'{save_name[j]}.pdf'))
+        print(f'The figure has also been saved as {Figure_name + save_name[j]}.pdf.')

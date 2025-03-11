@@ -116,8 +116,8 @@ if __name__ == '__main__':
         plt.xticks(range(200, 1200, 200), size=sz)
         plt.yticks(y_ticks[j], size=sz)
         plt.grid()
-        plt.savefig(save_path(f'{save[j]}.png'))
-    print(f'We have saved the NURHM results as {Figure_name}(a).png and {Figure_name}(b).png.\n')
+        plt.savefig(save_path(f'{save[j]}.pdf'))
+    print(f'We have saved the NURHM results as {Figure_name}(a).pdf and {Figure_name}(b).pdf.\n')
 
     # HSBM
     print('\n='*10+'HSBM'+'='*10)
@@ -150,8 +150,8 @@ if __name__ == '__main__':
         plt.xticks(range(200, 1200, 200), size=sz)
         plt.yticks(y_ticks[j], size=sz)
         plt.grid()
-        plt.savefig(save_path(f'{save[j]}.png'))
-    print(f'We have saved the HSBM results as {Figure_name}(c).png and {Figure_name}(d).png.\n')
+        plt.savefig(save_path(f'{save[j]}.pdf'))
+    print(f'We have saved the HSBM results as {Figure_name}(c).pdf and {Figure_name}(d).pdf.\n')
 
     t2 = time.time()
     print(f'Total Time:{int(t2-t1)}s')

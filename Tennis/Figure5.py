@@ -149,10 +149,10 @@ if __name__ == "__main__":
     plt.yticks(size = sz)
     rc('text', usetex=True)
     rc('font', family='serif')
-    ax.legend(title='Selected $(a, \lambda)$', prop={'size': sz},\
+    ax.legend(title='Selected $(a, \lambda)$', prop={'size': 0.8*sz},\
             title_fontsize=sz, loc='upper right')
     plt.grid()
-    plt.savefig(save_path('(a).png'))
+    plt.savefig(save_path('(a).pdf'))
 
 
 
@@ -169,7 +169,6 @@ if __name__ == "__main__":
     ax.axvline(x=36.6, color='red', linestyle=':', linewidth = 3)
     ax.fill_betweenx(y*100-20, 17.4, 36.6, color='gray', alpha=0.12)
 
-    sz = 36
     ax.set_xlabel('Age', size = sz)
     ax.set_ylabel('Estimated age effect', size = sz)
     ax.set_ylim([-0.2, 4.4])
@@ -179,6 +178,6 @@ if __name__ == "__main__":
     rc('text', usetex=True)
     rc('font', family='serif')
     plt.grid()
-    plt.savefig(save_path('(b).png'))
-    print(f'These two figures have been saved in {Figure_name}(a)(b).png')
+    plt.savefig(save_path('(b).pdf'))
+    print(f'These two figures have been saved in {Figure_name}(a)(b).pdf')
     

@@ -68,10 +68,10 @@ This experiment verifies the uniform consistency of the maximum likelihood estim
   - Generates a hypergraph with edge-dependent covariates under a specific setting.  
   - Computes the $\ell_\infty$-loss between the estimator and true parameters.  
   - Runs 300 repetitions and saves the results as:  
-    - *FigureS1(a).png*  
-    - *FigureS1(b).png*  
-    - *FigureS1(c).png*  
-    - *FigureS1(d).png*  
+    - *FigureS1(a).pdf*  
+    - *FigureS1(b).pdf*  
+    - *FigureS1(c).pdf*  
+    - *FigureS1(d).pdf*  
 
 ---
 
@@ -87,14 +87,14 @@ This experiment examines the age effect on tennis players and constructs a dynam
   - Computes basis coefficients using the PlusDC model.  
   - Selects the optimal combination using the BIC criterion.  
   - Plots and saves:  
-    - *Figure5(a).png* (Optimal bases)  
-    - *Figure5(b).png* (Estimated age effect)  
+    - *Figure5(a).pdf* (Optimal bases)  
+    - *Figure5(b).pdf* (Estimated age effect)  
   - Compares player rankings obtained from the PlusDC and BT models, saving results in *Figure5(c).csv*.  
 
 - **Figure1.py**:  
   - Uses the selected basis functions (from **Figure5.py**) to fit the PlusDC model.  
   - Integrates player birthdates to generate the "dynamic ability table".  
-  - Saves the results as *Figure1.png*.  
+  - Saves the results as *Figure1.pdf*.  
 
 ---
 
@@ -114,15 +114,15 @@ This experiment investigates the incorporation of actual weight, draw position, 
   - Compares results from the PlusDC and PL models.  
   - Saves outputs as:  
     - *FigureS2(right).csv*  
-    - *FigureS2(left).png*  
+    - *FigureS2(left).pdf*  
 
 - **FigureS3.py**:  
   - Conducts k-fold cross-validation.  
   - Compares predictive performance with the PL model and public belief.  
   - Saves plots as:  
-    - *FigureS3(a).png*  
-    - *FigureS3(b).png*  
-    - *FigureS3(c).png*  
+    - *FigureS3(a).pdf*  
+    - *FigureS3(b).pdf*  
+    - *FigureS3(c).pdf*  
 
 ### 2.2. Algorithm Core Functions  
 - **algorithm.py**: Implements the alternating maximization algorithm.  

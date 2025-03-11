@@ -157,5 +157,5 @@ if __name__ == "__main__":
     ax.set_xlabel(r'$\hat{\bm{u}}$'+" (PL)",size = sz)
     ax.set_ylabel(r'$\hat{\bm{u}}$'+" (PlusDC)",size = sz)
 
-    plt.savefig(save_path('(left).png'))
-    print(f'The figure has also been saved as {Figure_name}(left).png.')
+    plt.savefig(save_path('(left).pdf'))
+    print(f'The figure has also been saved as {Figure_name}(left).pdf.')
