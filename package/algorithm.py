@@ -4,7 +4,7 @@ import warnings
 # Suppress all warnings
 warnings.filterwarnings("ignore")
 ''' 
-Notations
+Notations:
     T is the edge list (len=N), whose element is a list of index (with m_i)
     X is the covariates list (len=N), whose element is np.array (in R^{m_i*d})
     u is a np.array (shape = n) corresponding to intrinsic score (in R^n)
@@ -21,6 +21,18 @@ l = k : Top-k log-likelihood
 l = None : Full log-likelihood
 '''
 def multi_likelihood(T,X,u,v = None,l = None):
+    """ Compute the log-likelihood in multiple case:
+
+    Args:
+        T (list): The list of edges (list of items).
+        X (list): The list of covariates (d dimensional np.array)
+        u (np.array): The intrisic score of items.
+        v (np.array): The coefficient of covariates
+        
+    Returns:
+        L (float): The corresponding log-likelihood.
+    
+    """
     if len(v) == 0 or v is None:
         d = len(X[0].T)
         v = np.zeros(d)
@@ -37,16 +49,36 @@ def multi_likelihood(T,X,u,v = None,l = None):
         for j in range(k):
             tem = R[j] / sum(R[j:])
             result += np.log(tem)
-    return result/N
+    L = result/N
+    return L
 
-### W is a np.array (in R^n) representing the winning times of each items
+### 
 def multi_Win(T,n):
+    """ Compute the winning times of each items.
+
+    Args:
+        T (list): The list of edges (list of items).
+        n (int): The number of items.
+
+    Return:
+        W is a np.array (in R^n) representing the winning times of each items.
+    """
     W = np.zeros((n))
     for i, t in enumerate(T):
         W[t[:-1]] += 1
     return W
 ### D_r is a list (len=N) containing the dynamic score in each competition
 def multi_DynamicScore_Win(X,v):
+    """ An intermediate step in the next function.
+
+    Args:
+        X (list): The list of edges (list of items).
+        v (int): The number of items.
+
+    Return:
+        W is a np.array (in R^n) representing the winning times of each items.
+        
+    """
     D_r = []
     for k in X:
         tem = np.exp(k@v)

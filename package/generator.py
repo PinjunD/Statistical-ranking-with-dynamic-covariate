@@ -4,8 +4,10 @@ import numpy as np
 
 def order(R):
     """ Generate the comparison results
+
     Args:
         R (list): A list of items that are involved in the comparison.
+    
     Returns :
         o (list): A list of items rearranged in order of rank.
     """
@@ -20,8 +22,10 @@ def order(R):
     return o
 def u_uniform(n):
     """Generate the intrinsic score from uniform distribution.
+    
     Args:
         n (int): The number of items.
+    
     Returns :
         u (np.array): The intrinsic score of items. (u.shape = n)
     """
@@ -30,30 +34,38 @@ def u_uniform(n):
     return u
 def x_center(n,d):
     """Generate the covariate center from uniform distribution.
+    
     Args:
         n (int): The number of items.
         d (int): The dimension of covariates.
+    
     Returns :
-        x (np.array): The covariate center of items. (u.shape = n,d)
+        x (np.array): The covariate center of items. (x.shape = n,d)
     """
     x = np.random.uniform(-0.5, 0.5, (n,d))
     x += - np.mean(x)
     return x
 def x_generator(x):
-    """Generate the covariate center from uniform distribution.
+    """Generate the dynamic covariate from covariate center.
+
     Args:
-        x (int): The number of items.
-        d (int): The dimension of covariates.
+        x (np.array): The covariate center of items. 
+
     Returns :
-        x (np.array): The intrinsic score of items. (u.shape = n,d)
+        variables (np.array): The intrinsic score of items. (variables.shape = x.shape)
     """
     m, d = x.shape
     variables = np.random.normal(0,1,size=(m,d))
     return variables
 
 
-""" Define the 
-
+"""Define the p_SBM configurations in HSBM (function of n)
+    Args:
+        n (int): The number of items.
+        
+    Returns:
+        p_SBM (dict): 'number' is the number of items in the first community (int)
+                      'p' is the list of probability (float) for 'within' and 'cross'.
 """
 normalize = lambda n: 25*n+4*np.log(n)**3
 p_in1 =lambda n: 5*n/normalize(n)
@@ -69,6 +81,19 @@ class MultipleComparison:
                  x_center = x_center,
                  x_generator = x_generator, 
                  m_lower = 2, m_upper = 3,Type = 'NURHM',p_SBM = p_SBM):
+        """ Initiate multiple comparison graph
+
+            Args:
+                n (int): The number of items.
+                N (function): The number of edges. (input: n, output: int)
+                m_lower (int): The lower bound of edge size.
+                m_upper (int): The upper bound of edge size.
+                u_generator (function): Generate the intrinsic score from uniform distribution.
+                x_center (function): Generate the covariate center from uniform distribution.
+                x_generator (function): Generate the dynamic covariate from covariate center.
+                Type (str): {'NURHM','HSBM'}.
+                p_SBM (dict): If Type=='HSBM', you can change this setting.
+        """
         self.n = n
         self.N = N(n)
         self.v = np.array(v)
@@ -85,33 +110,22 @@ class MultipleComparison:
         """print(f'complete get edges: Num_Edges={len(self.T)}, '
               f'Num_Nodes = {n},m_lower = {m_lower},m_upper = {m_upper}')"""
     def get_community(self,p_SBM):
+        """ Setting community configuration (pass if NURHM).
+        """
         if self.type == 'HSBM':
             self.n1 = p_SBM['number'](self.n)
             self.p = p_SBM['p'](self.n)
-            """self.n1 = int(self.n/3)
-            n = self.n
-            N = 25*n+4*np.log(n)**3
-            p1 = 5*n/N
-            p2 = 20*n/N
-            p3 = 4*np.log(n)**3/N
-            self.p = [p1, p2, p3]#community1 community2 cross"""
-
         else:
             pass
-    
-    def get_edges(self):
-        for m in self.m:
-            edge = self.choose_node(m)
-            latent_score = self.u[edge]
-            dynamic_score = self.x_generator(self.x_center[edge])
-            R = np.exp(latent_score + dynamic_score@self.v)
-            o = order(R)
-            new_edge = [x for _, x in sorted(zip(o, edge))]
-            new_X = np.array([x for _, x in sorted(zip(o, dynamic_score))])
-            self.T.append(new_edge)
-            self.X.append(new_X)
-
     def choose_node(self,m):
+        """ Randomly select nodes
+
+        Args:
+            m (int): The size of edge
+
+        Return:
+            e (list): The list of items that are involved in the comparison.
+        """
         if self.type == 'NURHM':
             e = np.random.choice(self.n, size=m, replace=False)
         elif self.type == 'HSBM':
@@ -130,22 +144,26 @@ class MultipleComparison:
         else:
             e = None
         return e
-    def Recomparison(self):
-        T_new = []
-        X_new = []
-        for T,X in zip(self.T,self.X):
-            latent_score = self.u[T]
-            R = np.exp(latent_score + X@self.v)
+    def get_edges(self):
+        """ Generate edges and edge-dependent covariates.
+        """
+        for m in self.m:
+            edge = self.choose_node(m)
+            latent_score = self.u[edge]
+            dynamic_score = self.x_generator(self.x_center[edge])
+            R = np.exp(latent_score + dynamic_score@self.v)
             o = order(R)
-            new_edge = [x for _, x in sorted(zip(o, T))]
-            new_X = np.array([x for _, x in sorted(zip(o, X))])
-            T_new.append(new_edge)
-            X_new.append(new_X)
-        self.T = T_new
-        self.X = X_new
+            new_edge = [x for _, x in sorted(zip(o, edge))]
+            new_X = np.array([x for _, x in sorted(zip(o, dynamic_score))])
+            self.T.append(new_edge)
+            self.X.append(new_X)
+
+    
 
     
 if __name__ == '__main__':
+    # Toy example
+
     n = 200
     N = lambda n: int(0.1*n*(np.log(n))**3)
     v = [1,-0.5,0]
