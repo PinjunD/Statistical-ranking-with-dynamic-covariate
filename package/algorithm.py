@@ -1,47 +1,87 @@
 import numpy as np
 import warnings
+from typing import Callable,Dict,Any,List
+
 
 # Suppress all warnings
 warnings.filterwarnings("ignore")
-''' 
-Notations:
-    T is the edge list (len=N), whose element is a list of index (with m_i)
-    X is the covariates list (len=N), whose element is np.array (in R^{m_i*d})
-    u is a np.array (shape = n) corresponding to intrinsic score (in R^n)
-    v is a np.array (shape = d) corresponding to covariates coefficient (in R^n)
-'''
-
-#Multiple Case
-
-## Algorithm
-
-### Calculate log-likelihood 
-'''
-l = k : Top-k log-likelihood
-l = None : Full log-likelihood
-'''
-def multi_likelihood(T,X,u,v = None,l = None):
-    """ Compute the log-likelihood in multiple case:
+# Alternating maximization
+def AM(
+    hyperedges_list: List[List[int]],
+    covariates_list: List[np.ndarray],
+    n: int,
+    d: int, 
+    u_initial: np.ndarray = None ,
+    v_initial: np.ndarray = None,
+    E: float = 1e-6,
+    Eu: float = 1e-4,
+    Ev: float = 1e-8,
+    I: int = 50,
+    detail: bool = False,
+    PL: bool = False,
+    TYPE: str ='multi'
+):
+    '''Alternating maximization:
 
     Args:
-        T (list): The list of edges (list of items).
-        X (list): The list of covariates (d dimensional np.array)
-        u (np.array): The intrisic score of items.
-        v (np.array): The coefficient of covariates
-        
+        T (list of len(N)): The list of edges (list of len(m_i)).
+        X (list of len(n)): The list of covariates (d dimensional np.array)
+        n (int): The number of items.
+        d (int): The dimension of covariates.
+        u_initial (np.array of shape(n)): The initial value of u.
+        v_initial (np.array of shape(v)): The initial value of v.
+        E (float): The accuracy of the iterations in alternating algorithm.
+        Eu (float): The accuracy of the iterations in updating u.
+        Ev (float): The accuracy of the iterations in updating v.
+        I (int): The maxinum iteration times
+        detail (bool): Print the iteration details?
+        P (bool): Fit PL?
+        save_likelihood (bool): Save log-likelihood?
+        type (str): 'multi' or 'pair'?
+
+    Return:
+        u,v (np.array of shape(n),np.array of shape(d)): The optimizer.
+    '''
+    if TYPE == 'multi':
+        u, v= multi_alternative(hyperedges_list, covariates_list, n, d, 
+                            u_initial = u_initial, v_initial = v_initial, 
+                            PL = PL,E = E,Eu = Eu,Ev = Ev,I = I,detail = detail)
+    elif TYPE == 'pair':
+        u, v= pair_alternative(hyperedges_list, covariates_list, n, d, 
+                            u_initial = u_initial, v_initial = v_initial, 
+                            PL = PL,E = E,Eu = Eu,Ev = Ev,I = I,detail = detail)
+    else:
+        print('please choose \'multi\' or \'pair\'')
+    return u,v
+
+def multi_likelihood(
+        hyperedges_list: List[List[int]],
+        covariates_list: List[np.ndarray],
+        u: np.ndarray,
+        v: np.ndarray = None,
+        l: int = None
+    ):
+    """ Compute the log-likelihood in multiple case:
+    Args:
+        hyperedges_set (List[List[int]]): A list as a set containing each comparison ranking. (Dimension: N(n))
+        covariates_set (List[np.ndarray]): A list as all the comparison rankings. (Dimension: N(n))
+        u (np.ndarray): An np.ndarray as the intrinsic score. (Dimension: n)
+        v (np.ndarray): An np.ndarray as the coefficient of covariates.
+        l (int or None): The Top-k log-likelihood or Full log-likelihood.
+
     Returns:
-        L (float): The corresponding log-likelihood.
+        L (float): A float as log-likelihood.
     
     """
-    if len(v) == 0 or v is None:
-        d = len(X[0].T)
+    if v is None:
+        d = len(covariates_list[0].T)
         v = np.zeros(d)
     else:
         pass
-    N = len(T)
+    N = len(hyperedges_list)
     result = 0
-    for i, t in enumerate(T):
-        R = np.exp(u[t] + X[i] @ v)
+    for i, t in enumerate(hyperedges_list):
+        R = np.exp(u[t] + covariates_list[i] @ v)
         if l is None:
             k = len(t)-1
         else:
@@ -52,32 +92,244 @@ def multi_likelihood(T,X,u,v = None,l = None):
     L = result/N
     return L
 
-### 
+def multi_alternative(
+        hyperedges_list: List[List[int]],
+        covariates_list: List[np.ndarray],
+        n: int,
+        d: int, 
+        u_initial: np.ndarray = None ,
+        v_initial: np.ndarray = None,
+        E: float = 1e-6,
+        Eu: float = 1e-4,
+        Ev: float = 1e-8,
+        I: int = 50,
+        detail: bool = False,
+        PL: bool = False,
+        save_likelihood: bool = False):
+    '''Alternating maximization in multiple case:
+
+    Args:
+        hyperedges_set (List[List[int]]): A list as a set containing each comparison ranking. (Dimension: N(n))
+        covariates_set (List[np.ndarray]): A list as all the comparison rankings. (Dimension: N(n))
+        n (int): An int as the number of items.
+        d (int): An int as the dimension of covariates.
+        u_initial (np.ndarray): An np.ndarray as the intrinsic score. (Dimension: n)
+        v_initial (np.ndarray): An np.ndarray as the coefficient of covariates.
+        E (float): The accuracy of the iterations in alternating algorithm.
+        Eu (float): The accuracy of the iterations in updating u.
+        Ev (float): The accuracy of the iterations in updating v.
+        I (int): The maxinum iteration times
+        detail (bool): Print the iteration details?
+        PL (bool): Fit PL?
+        save_likelihood (bool): Save log-likelihood?
+
+    Return:
+        u,v (np.ndarray,np.ndarray): The optimizer.
+    '''
+    
+    W = multi_Win(hyperedges_list,n)
+    # Is PL?
+    if d == 0 or PL:
+        PL = True
+    else:
+        PL = False
+    # Initials
+    if v_initial is None or PL:
+        v = np.zeros(d)
+    else:
+        v = v_initial
+    if u_initial is None:
+        u = np.zeros(n)
+    else:
+        u = u_initial
+    # Calculate log-likelihood
+    l1 = multi_likelihood(hyperedges_list,covariates_list,u,v)
+    L = [l1]
+    i, error = 1, 1
+    if PL:
+        # PL
+        u = multi_fixv(hyperedges_list, covariates_list, v, n, W,E=Eu,I=1000, u_initial = u,detail = detail)
+    else:
+        # PlusDC
+        while error > E and i < 100:
+            if detail:
+                print('-'*5+f'{i}'+'-'*5)
+                print(f'log-likelihood: {L[-1]}')
+            else:
+                pass
+            v1 = multi_fixu(hyperedges_list, covariates_list, u, d, v_initial=v.copy(),E=Ev,I=I,detail=detail)
+            u1 = multi_fixv(hyperedges_list, covariates_list, v1, n, W, u_initial = u,I=I,E=Eu,detail=detail)
+            u = u1
+            v = v1
+            l2 = multi_likelihood(hyperedges_list, covariates_list, u, v)
+            L.append(l2)
+            error = l2 - l1
+            l1 = l2
+            i += 1
+    if np.isnan(u).any() or np.isnan(v).any():
+        print('The optimal solution does not exist')
+    else:
+        pass
+    if save_likelihood:
+        return L
+    else:
+        return u, v
+
+def pair_likelihood(
+        hyperedges_list: List[List[int]],
+        covariates_list: List[np.ndarray],
+        u: np.ndarray,
+        v: np.ndarray = None
+        ):
+    """ Compute the log-likelihood in pairwise case:
+
+    Args:
+        hyperedges_set (List[List[int]]): A list as a set containing each comparison ranking. (Dimension: N(n))
+        covariates_set (List[np.ndarray]): A list as all the comparison rankings. (Dimension: N(n))
+        u (np.ndarray): An np.ndarray as the intrinsic score. (Dimension: n)
+        v (np.ndarray): An np.ndarray as the coefficient of covariates.
+
+    Returns:
+        L (float): The corresponding log-likelihood.
+    
+    """
+    if v is None:
+        d = len(covariates_list[0].T)
+        v = np.zeros(d)
+    else:
+        pass
+    
+    K = np.array([x[0,:]-x[1,:] for x in covariates_list])
+    T = np.array(hyperedges_list)
+    result = 0
+    different_score = u[T][:,0]-u[T][:,1]+K@v
+    p = sig(different_score)
+    result = np.mean(np.log(p))
+    return result
+
+def pair_alternative(
+        hyperedges_list: List[List[int]],
+        covariates_list: List[np.ndarray],
+        n: int,
+        d: int, 
+        u_initial: np.ndarray = None ,
+        v_initial: np.ndarray = None,
+        E: float = 1e-6,
+        Eu: float = 1e-4,
+        Ev: float = 1e-8,
+        I: int = 50,
+        detail: bool = False,
+        PL: bool = False,
+        save_likelihood: bool = False):
+    '''Alternating maximization in pairwise case:
+
+    Args:
+        T (list of len(N)): The list of edges (list of len(m_i)).
+        X (list of len(n)): The list of covariates (d dimensional np.array)
+        n (int): The number of items.
+        d (int): The dimension of covariates.
+        u_initial (np.array of shape(n)): The initial value of u.
+        v_initial (np.array of shape(v)): The initial value of v.
+        E (float): The accuracy of the iterations in alternating algorithm.
+        Eu (float): The accuracy of the iterations in updating u.
+        Ev (float): The accuracy of the iterations in updating v.
+        I (int): The maxinum iteration times
+        detail (bool): Print the iteration details?
+        P (bool): Fit PL?
+        save_likelihood (bool): Save log-likelihood?
+
+    Return:
+        u,v (np.array of shape(n),np.array of shape(d)): The optimizer.
+    '''
+    K = np.array([x[0,:]-x[1,:] for x in covariates_list])
+    T = np.array(hyperedges_list)
+    win,lose,win_count = get_win(T,n)
+    # Is PL?
+    if d == 0 or PL:
+        PL = True
+    else:
+        PL = False
+    # Initials
+    if v_initial is None or PL:
+        v = np.zeros(d)
+    else:
+        v = v_initial
+    if u_initial is None:
+        u = np.zeros(n)
+    else:
+        u = u_initial
+    l1 = pair_likelihood(hyperedges_list,covariates_list,u,v)
+    L = [l1]
+    i, error = 1, 1
+
+    if PL:
+        u = pair_fixv(T, K, v, n, win, lose,win_count, 
+                      u_initial = u,E=Eu,detail=detail)
+    else:
+        while error > E and i < 100 and not PL:
+            if detail:
+                print('-'*5+f'{i}'+'-'*5)
+                print(f'log-likelihood: {L[-1]}')
+            else:
+                pass
+            v = pair_fixu(T, K, u, d, v_initial = v.copy(),E=Ev,I=I,detail=detail)
+            u = pair_fixv(T, K, v, n, win, lose, win_count,
+                           u_initial = u,E=Eu,I=I,detail=detail)
+            l2 = pair_likelihood(hyperedges_list,covariates_list, u, v)
+            L.append(l2)
+
+            error = l2 - l1
+            l1 = l2
+            i += 1
+    if np.isnan(u).any() or np.isnan(v).any():
+        print('The optimal solution does not exist')
+    else:
+        pass
+    if save_likelihood:
+        return L
+    else:
+        return u, v
+
+
+
+
+"""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""
+
+"""Some intermediate functions. """
+
+"""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""
+
+
+
+
+sig = lambda x: np.exp(x)/(1+np.exp(x))
+ 
+### Multiple
 def multi_Win(T,n):
     """ Compute the winning times of each items.
 
     Args:
-        T (list): The list of edges (list of items).
+        T (list of len(N)): The list of edges (list of items).
         n (int): The number of items.
 
     Return:
-        W is a np.array (in R^n) representing the winning times of each items.
+        W (np.array of shape(n)): The winning times of each items.
     """
     W = np.zeros((n))
     for i, t in enumerate(T):
         W[t[:-1]] += 1
     return W
-### D_r is a list (len=N) containing the dynamic score in each competition
 def multi_DynamicScore_Win(X,v):
     """ An intermediate step in the next function.
 
     Args:
-        X (list): The list of edges (list of items).
-        v (int): The number of items.
+        X (list of len(N)): The list of edges (list of items).
+        v (np.array of shape(d)): The coefficient of covariates.
 
     Return:
-        W is a np.array (in R^n) representing the winning times of each items.
-        
+        D_r (list of len(N)): Each element (np.array of shape(m_i)) 
     """
     D_r = []
     for k in X:
@@ -85,8 +337,19 @@ def multi_DynamicScore_Win(X,v):
         tem = tem/sum(tem)
         D_r.append(tem)
     return D_r
-### Each step of optimizing u
 def multi_update_R(R,W,D,T,n):
+    '''The algorithm to optimize u:
+
+    Args:
+        R (np.array of shape(n)): Exponential of the intrinsic score.
+        W (list of len(N)): (calculated by 'multiple_Win')
+        D (list of len(N)): Each element (np.array of shape(m_i)) 
+        T (list of len(N)): The list of edges (list of len(m_i)).
+        n (int): The number of items.
+
+    Return:
+        R_new (np.array of shape(n)): The exponential of updated intrinsic score.
+    '''
     M = np.zeros(n)
     for i, t in enumerate(T):
         d = D[i]
@@ -97,16 +360,24 @@ def multi_update_R(R,W,D,T,n):
     R_new = W/M
     R_new /= np.sum(R_new)
     return R_new
-
-### The whole algorithm to optimize u
-'''
-'W' should be calculated by 'multiple_Win'
-'E' is the accuracy of the iterations
-'I' is the maxinum iteration times
-'u_initial' is the initial value of u
-You can set 'detail = True' to print the iteration times of u in algorithm
-'''
 def multi_fixv(T,X,v,n,W, E = 1e-6 , I = 50, u_initial = None, detail = False):
+    '''The algorithm to optimize u:
+
+    Args:
+        T (list of len(N)): The list of edges (list of len(m_i)).
+        X (list of len(n)): The list of covariates (d dimensional np.array)
+        v (np.array of shape(d)): The coefficient of covariates.
+        n (int): The number of items.
+        W (list of len(N)): (calculated by 'multiple_Win')
+        E (float): The accuracy of the iterations
+        I (int): The maxinum iteration times
+        u_initial (np.array of shape(n)): The initial value of u
+        detail (bool): Print the iteration details.
+
+    Return:
+        u (np.array of shape(n)): The updated intrinsic score.
+    '''
+
     D = multi_DynamicScore_Win(X, v)
     if u_initial is None:
         R = np.ones(n)/n
@@ -126,9 +397,19 @@ def multi_fixv(T,X,v,n,W, E = 1e-6 , I = 50, u_initial = None, detail = False):
     u = np.log(R_new)
     u = u - np.mean(u)
     return u
+def multi_update_v(T,X,u,d,v):
+    '''Each step of optimizing v:
 
-### Each step of optimizing v
-def multi_update_v(v,u,T,X,d):
+    Args:
+        T (list of len(N)): The list of edges (list of len(m_i)).
+        X (list of len(n)): The list of covariates (d dimensional np.array)
+        u (np.array of shape(n)): The intrinsic score.
+        d (int): The dimension of covariates.
+        v (np.array of shape(d)): The coefficient of covariates.
+
+    Return:
+        update (np.array of shape(d)): The increment of v.
+    '''
     tem = 0
     H = np.zeros((d,d))
     for i, xx in enumerate(X):
@@ -144,15 +425,22 @@ def multi_update_v(v,u,T,X,d):
     H = np.linalg.inv(H)
     update = H@tem
     return update
-
-### The whole algorithm to optimize u
-'''
-'E' is the accuracy of the iterations
-'I' is the maxinum iteration times
-'v_initial' is the initial value of u
-You can set 'detail = True' to print the iteration times of u in algorithm
-'''
 def multi_fixu(T,X,u,d, E=1e-6, I = 1000,v_initial = None,detail = False):
+    '''The algorithm to optimize v:
+
+    Args:
+        T (list of len(N)): The list of edges (list of len(m_i)).
+        X (list of len(n)): The list of covariates (d dimensional np.array)
+        u (np.array of shape(n)): The intrinsic score.
+        d (int): The dimension of covariates.
+        E (float): The accuracy of the iterations
+        I (int): The maxinum iteration times
+        v_initial (np.array of shape(n)): The initial value of oefficient v.
+        detail (bool): Print the iteration details.
+
+    Return:
+        v (np.array of shape(d)): The updated covariates' coefficient.
+    '''
     if v_initial is None:
         v = np.zeros(d)
     else:
@@ -160,7 +448,7 @@ def multi_fixu(T,X,u,d, E=1e-6, I = 1000,v_initial = None,detail = False):
         pass
     i, error = 1, 1
     while error > E*1000 and i < I:
-        v_update = multi_update_v(v,u,T,X,d)
+        v_update = multi_update_v(T,X,u,d,v)
         v = v + v_update
         if d == 1:
             error = abs(v_update)
@@ -172,88 +460,20 @@ def multi_fixu(T,X,u,d, E=1e-6, I = 1000,v_initial = None,detail = False):
     else:
         pass
     return v
-### Alternating maximization algorithm
-'''
-'E' is the accuracy of the iterations
-'I' is the maxinum iteration times
-'v_initial' is the initial value of u
-You can set 'detail = True' to print the iteration times of u in algorithm
-'''
-def multi_alternative(T,X,n,d, 
-                      u_initial = None ,v_initial = None,
-                      E = 1e-6,Eu=1e-4,Ev=1e-8,I=50,
-                      P = False, detail = False,save_likelihood = False):
-    W = multi_Win(T,n)
-    # Is PL?
-    if d == 0 or P:
-        PL = True
-    else:
-        PL = False
-    # Initials
-    if v_initial is None or P:
-        v = np.zeros(d)
-    else:
-        v = v_initial
-    if u_initial is None:
-        u = np.zeros(n)
-    else:
-        u = u_initial
-    l1 = multi_likelihood(T,X,u,v)
-    L = [l1]
-    i, error = 1, 1
-    if PL:
-        # PL
-        u = multi_fixv(T, X, v, n, W,E=Eu,I=1000, u_initial = u,detail = detail)
-    else:
-        # PlusDC
-        while error > E and i < 100:
-            if detail:
-                print('-'*5+f'{i}'+'-'*5)
-                print(f'log-likelihood: {L[-1]}')
-            else:
-                pass
-            v1 = multi_fixu(T, X, u, d, v_initial=v.copy(),E=Ev,I=I,detail=detail)
-            u1 = multi_fixv(T, X, v1, n, W, u_initial = u,I=I,E=Eu,detail=detail)
-            u = u1
-            v = v1
-            l2 = multi_likelihood(T, X, u, v)
-            L.append(l2)
-            error = l2 - l1
-            l1 = l2
-            i += 1
-    if np.isnan(u).any() or np.isnan(v).any():
-        print('The optimal solution does not exist')
-    else:
-        pass
-    if save_likelihood:
-        return L
-    else:
-        return u, v
 
-
-## Pairwise case (Faster than the general algorithm)
-
-### sigmoid function s
-sig = lambda x: np.exp(x)/(1+np.exp(x))
-
-### likelihood
-def pair_likelihood(T,K,u,v = None):
-    if len(v) == 0 or v is None:
-        d = len(K[0].T)
-        v = np.zeros(d)
-    else:
-        pass
-    if type(K) is list:
-        K = np.array([x[0,:]-x[1,:] for x in K])
-    else:
-        pass
-    result = 0
-    different_score = u[T][:,0]-u[T][:,1]+K@v
-    p = sig(different_score)
-    result = np.mean(np.log(p))
-    return result
-### Calculate the information of winning
+### Pairwise
 def get_win(T,n):
+    """ Compute the winning times of each items.
+
+    Args:
+        T (list of len(N)): The list of edges (list of items).
+        n (int): The number of items.
+
+    Return:
+        win (dict of len(n)): The winning competitions of each player.
+        lose (dict of len(n)): The losing competitions of each player.
+        win_count (dict of len(n)): The winning times of each player.
+    """
     win = {i: 0 for i in range(n)}
     lose = {i: 0 for i in range(n)}
     win_count = np.zeros(n)
@@ -265,8 +485,23 @@ def get_win(T,n):
         lose_count[i] = len(lose[i])
     return win,lose,win_count
 
-### Each step of updating u
 def pair_update_R(R,T,K,v,win,lose,win_count,n):
+    '''The algorithm to optimize u:
+
+    Args:
+        R (np.array of shape(n)): Exponential of the intrinsic score.
+        T (list of len(N)): The list of edges (list of len(m_i)).
+        K (np.array of shape(N,d)): The difference of covariates.
+        v (np.array of shape(d)): The coefficient of covariates.
+        win (dict of len(n)): The winning competitions of each player.
+        lose (dict of len(n)): The losing competitions of each player.
+        win_count (dict of len(n)): The winning times of each player.
+        n (int): The number of items.
+
+
+    Return:
+        R (np.array of shape(n)): The exponential of updated intrinsic score.
+    '''
     R1 = R[T[:,0]]
     R2 = R[T[:,1]]
     c = np.exp(-K@v)
@@ -275,8 +510,26 @@ def pair_update_R(R,T,K,v,win,lose,win_count,n):
     #u_est = np.log(1/res*win_count)
     R = 1/res*win_count
     return R
-### The whole algorithm of optimizing u
-def pair_fixv(T,K,v,n,win=None,lose=None,win_count=None, E = 1e-6 , I = 1000, u_initial = None,detail = False):
+
+def pair_fixv(T,K,v,n,win,lose,win_count, E = 1e-6 , I = 1000, u_initial = None,detail = False):
+    '''The algorithm to optimize u:
+
+    Args:
+        T (list of len(N)): The list of edges (list of len(m_i)).
+        K (np.array of shape(N,d)): The difference of covariates.
+        v (np.array of shape(d)): The coefficient of covariates.
+        n (int): The number of items.
+        win (dict of len(n)): The winning competitions of each player.
+        lose (dict of len(n)): The losing competitions of each player.
+        win_count (dict of len(n)): The winning times of each player.
+        E (float): The accuracy of the iterations
+        I (int): The maxinum iteration times
+        u_initial (np.array of shape(n)): The initial value of u
+        detail (bool): Print the iteration details.
+
+    Return:
+        u (np.array of shape(n)): The updated intrinsic score.
+    '''
     T = np.copy(T)
     if win is None:
         win,lose,win_count = get_win(T,n)
@@ -302,8 +555,18 @@ def pair_fixv(T,K,v,n,win=None,lose=None,win_count=None, E = 1e-6 , I = 1000, u_
         pass
     return u
 
-### Each step of updating v
-def pair_update_v(v,u,T,K):
+def pair_update_v(T,K,u,v):
+    '''The algorithm to optimize u:
+
+    Args:
+        T (list of len(N)): The list of edges (list of len(m_i)).
+        K (np.array of shape(N,d)): The difference of covariates.
+        u (np.array of shape(n)): The intrinsic score.
+        v (np.array of shape(d)): The coefficient of covariates.
+
+    Return:
+        R (np.array of shape(n)): The exponential of updated intrinsic score.
+    '''
     tem = u[T]
     s = tem[:,0]-tem[:,1] + K@v
     l1 = 1 - sig(s)
@@ -311,8 +574,22 @@ def pair_update_v(v,u,T,K):
     update = np.linalg.inv(l2)@K.T@l1
     return update
 
-### The whole algorithm of optimizing u
 def pair_fixu(T,K,u,d, E=1e-6, I = 1000,v_initial = None,detail = False):
+    '''The algorithm to optimize v:
+
+    Args:
+        T (list of len(N)): The list of edges (list of len(m_i)).
+        X (list of len(n)): The list of covariates (d dimensional np.array)
+        u (np.array of shape(n)): The intrinsic score.
+        d (int): The dimension of covariates.
+        E (float): The accuracy of the iterations
+        I (int): The maxinum iteration times
+        v_initial (np.array of shape(n)): The initial value of oefficient v.
+        detail (bool): Print the iteration details.
+
+    Return:
+        v (np.array of shape(d)): The updated covariates' coefficient.
+    '''
     if v_initial is None:
         v = np.zeros(d)
     else:
@@ -320,7 +597,7 @@ def pair_fixu(T,K,u,d, E=1e-6, I = 1000,v_initial = None,detail = False):
         pass
     i, error = 1, 1
     while error > E and i < I:
-        v_update = pair_update_v(v, u, T, K)
+        v_update = pair_update_v(T, K, u, v)
         v = v + v_update
         if d == 1:
             error = abs(v_update)
@@ -332,66 +609,3 @@ def pair_fixu(T,K,u,d, E=1e-6, I = 1000,v_initial = None,detail = False):
     else:
         pass
     return v
-### Similar to the first
-def pair_alternative(T,X,n,d, u_initial = None ,v_initial = None,
-                     E = 1e-6,Eu=1e-4,Ev=1e-8,I = 50,
-                     P = False,detail = False,save_likelihood = False):
-    
-    K = np.array([x[0,:]-x[1,:] for x in X])
-    T = np.array(T)
-    win,lose,win_count = get_win(T,n)
-    # Is PL?
-    if d == 0 or P:
-        PL = True
-    else:
-        PL = False
-    # Initials
-    if v_initial is None or P:
-        v = np.zeros(d)
-    else:
-        v = v_initial
-    if u_initial is None:
-        u = np.zeros(n)
-    else:
-        u = u_initial
-    l1 = pair_likelihood(T,K,u,v)
-    L = [l1]
-    i, error = 1, 1
-
-    if PL:
-        u = pair_fixv(T, K, v, n, win, lose,win_count, 
-                      u_initial = u,E=Eu,detail=detail)
-    else:
-        while error > E and i < 100 and not PL:
-            if detail:
-                print('-'*5+f'{i}'+'-'*5)
-                print(f'log-likelihood: {L[-1]}')
-            else:
-                pass
-            v = pair_fixu(T, K, u, d, v_initial = v.copy(),E=Ev,I=I,detail=detail)
-            u = pair_fixv(T, K, v, n, win, lose, win_count,
-                           u_initial = u,E=Eu,I=I,detail=detail)
-            l2 = pair_likelihood(T, K, u, v)
-            L.append(l2)
-
-            error = l2 - l1
-            l1 = l2
-            i += 1
-    if np.isnan(u).any() or np.isnan(v).any():
-        print('The optimal solution does not exist')
-    else:
-        pass
-    if save_likelihood:
-        return L
-    else:
-        return u, v
-
-## Comprehensive method
-def AM(T,X,n,d,u_initial = None, v_initial = None,P = False,E = 1e-3,Eu=1e-4,Ev=1e-8,detail = False,type = 'multi',I=50):
-    if type == 'multi':
-        u, v= multi_alternative(T,X,n,d, u_initial = u_initial, v_initial = v_initial, P = P,E = E,Eu=Eu,Ev=Ev,I=I,detail = detail)
-    elif type == 'pair':
-        u, v= pair_alternative(T,X,n,d, u_initial = u_initial , v_initial = v_initial, P = P,E = E,Eu=Eu,Ev=Ev,I=I,detail = detail)
-    else:
-        print('please choose \'multi\' or \'pair\'')
-    return u,v

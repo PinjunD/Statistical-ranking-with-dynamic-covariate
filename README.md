@@ -36,7 +36,6 @@ To get started, you can either download the source code directly or use Git to c
 ```bash
 git clone https://github.com/PinjunD/Statistical-ranking-with-dynamic-covariate.git
 cd Statistical-ranking-with-dynamic-covariate
-cd reproductions_codes
 ```
 
 Ensure you have Python installed (preferably Python 3.x), then install the required packages using:

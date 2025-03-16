@@ -41,7 +41,8 @@ def printf(u_infty,v_infty,repeat,nn,name):
 def simulation(n, N, v,d, m_lower, m_upper, name = 'NURHM', shared_list = None):
         H = generator.MultipleComparison(n,N,v,m_lower=m_lower,m_upper=m_upper,Type = name)
         u_true, v_true = H.u,H.v
-        u_estimation, v_estimation = algorithm.AM(H.T,H.X,n,d,u_initial=u_true,v_initial=v_true)
+        E,X = H.hyperedges_set,H.covariates_set
+        u_estimation, v_estimation = algorithm.AM(E,X,n,d,u_initial=u_true,v_initial=v_true)
         u_infty = max(abs(u_estimation-u_true))
         v_infty = max(abs(v_estimation-v_true))
         result = [H.n,u_infty,v_infty]

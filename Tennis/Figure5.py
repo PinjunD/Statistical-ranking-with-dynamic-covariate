@@ -31,7 +31,7 @@ def print_progress_bar(iteration, total, length=40):
 def get_BIC(T,cov,s,N,n,shared_list):
     X = [x[:,s] for x in cov]
     d = len(s)
-    u_plusDC,v_plusDC = algorithm.AM(T,X,n,d,E=1e-3,Eu=1e-8,Ev=1e-12,type = 'pair')
+    u_plusDC,v_plusDC = algorithm.AM(T,X,n,d,E=1e-3,Eu=1e-8,Ev=1e-12,TYPE = 'pair')
     likelihood = algorithm.multi_likelihood(T,X,u_plusDC,v_plusDC)
     BIC = (n-1+d) * np.log(N) - 2*likelihood*N
     shared_list.append(1)
@@ -92,13 +92,11 @@ if __name__ == "__main__":
     ## fit PlusDC,BT
     d = len(s)
     X = [x[:,s] for x in cov]
-    v=np.array([0]*d)
-    KK = np.array([k[0] - k[1] for k in X])
-    u_BT = algorithm.pair_fixv(T,KK,v,n,E = 1e-8,I=52)
+    u_BT,v_BT = algorithm.AM(T,X,n,d,E = 1e-8,I=52,PL = True,TYPE = 'pair')
     u_plusDC,v_plusDC = algorithm.AM(T,X,n,d,
                     E=1e-4/N,Eu=1e-8,Ev=1e-12,
-                    I=52,type = 'pair')
-    likelihood_BT = algorithm.pair_likelihood(T,X,u_BT,v)
+                    I=52,TYPE = 'pair')
+    likelihood_BT = algorithm.pair_likelihood(T,X,u_BT)
     print(f"Complete! v={v_plusDC}")
     # plot table
     print('\n'+"="*10+'Ranking'+"="*10)

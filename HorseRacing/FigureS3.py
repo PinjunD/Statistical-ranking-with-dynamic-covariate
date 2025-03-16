@@ -35,7 +35,7 @@ def horse_cross_validation(T,cov,n,d,subset,CV_filename,shared_list):
     Xtest = [cov[i] for i in range(N) if i in subset]
 
 
-    u_pl,v_pl = algorithm.AM(Ttrain,Xtrain,n,d,P=True,Eu=1e-5)
+    u_pl,v_pl = algorithm.AM(Ttrain,Xtrain,n,d,PL=True,Eu=1e-5)
     u_plusDC,v_plusDC = algorithm.AM(Ttrain,Xtrain,n,d,
                                 E=1e-5,Eu=1e-5,Ev=1e-12,
                                 I=52)

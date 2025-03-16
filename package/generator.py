@@ -1,25 +1,6 @@
 import numpy as np
-
+from typing import Callable,Dict,Any,List
 # Some initial configurations
-
-def order(R):
-    """ Generate the comparison results
-
-    Args:
-        R (list): A list of items that are involved in the comparison.
-    
-    Returns :
-        o (list): A list of items rearranged in order of rank.
-    """
-    m = len(R)
-    o = [m-1 for _ in range(m)]
-    for i in range(m-1):
-        R = R/sum(R)
-        win = np.random.multinomial(1,R)
-        ind = np.nonzero(win == 1)[0][0]
-        o[ind] = i
-        R[ind] = 0
-    return o
 def u_uniform(n):
     """Generate the intrinsic score from uniform distribution.
     
@@ -32,7 +13,8 @@ def u_uniform(n):
     u = np.random.uniform(-0.5, 0.5, n)
     u += - np.mean(u)
     return u
-def x_center(n,d):
+
+def x_center(n,d):    
     """Generate the covariate center from uniform distribution.
     
     Args:
@@ -45,6 +27,7 @@ def x_center(n,d):
     x = np.random.uniform(-0.5, 0.5, (n,d))
     x += - np.mean(x)
     return x
+
 def x_generator(x):
     """Generate the dynamic covariate from covariate center.
 
@@ -58,37 +41,72 @@ def x_generator(x):
     variables = np.random.normal(0,1,size=(m,d))
     return variables
 
+def HSBM_setting(n):
+    """Define the p_SBM configurations in HSBM (function of n)
+        Args:
+            n (int): The number of items.
+            
+        Returns:
+            p_SBM (dict): 'number' is the number of items in the first community (int)
+                        'p' is the list of probability (float) for 'within' and 'cross'.
+    """
+    normalize = lambda n: 25*n+4*np.log(n)**3
+    p_in1 =lambda n: 5*n/normalize(n)
+    p_in2 =lambda n: 20*n/normalize(n)
+    p_cross =lambda n: 4*np.log(n)**3/normalize(n)
+    p_SBM = {'number':lambda x: int(x/3),
+            'p':lambda x: [p_in1(x),p_in2(x),p_cross(x)]
+    }
+    return p_SBM
 
-"""Define the p_SBM configurations in HSBM (function of n)
-    Args:
-        n (int): The number of items.
-        
-    Returns:
-        p_SBM (dict): 'number' is the number of items in the first community (int)
-                      'p' is the list of probability (float) for 'within' and 'cross'.
-"""
-normalize = lambda n: 25*n+4*np.log(n)**3
-p_in1 =lambda n: 5*n/normalize(n)
-p_in2 =lambda n: 20*n/normalize(n)
-p_cross =lambda n: 4*np.log(n)**3/normalize(n)
-p_SBM = {'number':lambda x: int(x/3),
-         'p':lambda x: [p_in1(x),p_in2(x),p_cross(x)]
-}
 
+# Comparison Generator
 class MultipleComparison:
-    def __init__(self, n, N, v, 
-                 u_generator = u_uniform,
-                 x_center = x_center,
-                 x_generator = x_generator, 
-                 m_lower = 2, m_upper = 3,Type = 'NURHM',p_SBM = p_SBM):
-        """ Initiate multiple comparison graph
+    """ Generate a multiple comparison graph
+    
+    Attributes:
+        n (int): An int as the number of items.
+        N (Callable[[int], int]): A function for generating hyperedges' number.
+        m (List[int]): A list for representing the sizes of hyperedges.
+        type (str): A string for selecting either 'NURHM' or 'HSBM'.
+        x_center (np.ndarray): An np.ndarray as the center of the covariates. (Dimension: n*d)
+        x_generator (Callable[[np.ndarray], np.ndarray]): 
+            A function for generating dynamic covariates based on x_center.
+        u (np.ndarray): An np.ndarray as the intrinsic score. (Dimension: n)
+        v (np.ndarray): An np.ndarray as the coefficient of covariates.
+        d (int): An int as the dimension of covariates.
+        hyperedges_set (List[List[int]]): A list as a set containing each comparison ranking. (Dimension: N(n))
+        covariates_set (List[np.ndarray]): A list as all the comparison rankings. (Dimension: N(n))
+
+    Methods:
+        get_community(Dict) -> None
+        choose_node(m) -> None
+        get_edges() -> None
+        get_order(np.ndarray) -> np.ndarray:
+    """
+
+
+    def __init__(
+            self, 
+            n: int, 
+            N: Callable[[int], int], 
+            v: np.ndarray,      
+            u_generator: Callable[[int], np.ndarray] = u_uniform,
+            x_center: Callable[[int], np.ndarray] = x_center,
+            x_generator: Callable[[np.ndarray], np.ndarray] = x_generator, 
+            m_lower: int = 2, 
+            m_upper: int = 3,
+            Type: str = 'NURHM',
+            p_SBM: Callable[[int],Dict[str,Any]] = HSBM_setting
+        ):
+        """ Initiate configurations:
 
             Args:
                 n (int): The number of items.
-                N (function): The number of edges. (input: n, output: int)
+                N (Callable[[int], int]): The number of edges. 
                 m_lower (int): The lower bound of edge size.
                 m_upper (int): The upper bound of edge size.
-                u_generator (function): Generate the intrinsic score from uniform distribution.
+                u_generator (Callable[[int], ]): Generate the intrinsic score from uniform distribution.
                 x_center (function): Generate the covariate center from uniform distribution.
                 x_generator (function): Generate the dynamic covariate from covariate center.
                 Type (str): {'NURHM','HSBM'}.
@@ -96,28 +114,30 @@ class MultipleComparison:
         """
         self.n = n
         self.N = N(n)
+        self.m = np.random.randint(m_lower,m_upper,self.N)
+        self.type = Type
+
+        self.u = u_generator(n)
         self.v = np.array(v)
         self.d = len(v)
-        self.type = Type
-        self.m = np.random.randint(m_lower,m_upper,self.N)
-        self.u = u_generator(n)
         self.x_center = x_center(n,self.d)
         self.x_generator = x_generator
-        self.T = []
-        self.X = []
-        self.get_community(p_SBM)
+        
+        
+        self.hyperedges_set = []
+        self.covariates_set = []
+        self.get_community(p_SBM(n))
         self.get_edges()
-        """print(f'complete get edges: Num_Edges={len(self.T)}, '
-              f'Num_Nodes = {n},m_lower = {m_lower},m_upper = {m_upper}')"""
-    def get_community(self,p_SBM):
+
+    def get_community(self, config: Dict[str,Any]) -> None :
         """ Setting community configuration (pass if NURHM).
         """
         if self.type == 'HSBM':
-            self.n1 = p_SBM['number'](self.n)
-            self.p = p_SBM['p'](self.n)
+            self.n1 = config['number'](self.n)
+            self.p = config['p'](self.n)
         else:
             pass
-    def choose_node(self,m):
+    def choose_node(self,m:int) -> None :
         """ Randomly select nodes
 
         Args:
@@ -144,7 +164,7 @@ class MultipleComparison:
         else:
             e = None
         return e
-    def get_edges(self):
+    def get_edges(self) -> None :
         """ Generate edges and edge-dependent covariates.
         """
         for m in self.m:
@@ -152,15 +172,30 @@ class MultipleComparison:
             latent_score = self.u[edge]
             dynamic_score = self.x_generator(self.x_center[edge])
             R = np.exp(latent_score + dynamic_score@self.v)
-            o = order(R)
+            o = self.get_order(R)
             new_edge = [x for _, x in sorted(zip(o, edge))]
             new_X = np.array([x for _, x in sorted(zip(o, dynamic_score))])
-            self.T.append(new_edge)
-            self.X.append(new_X)
+            self.hyperedges_set.append(new_edge)
+            self.covariates_set.append(new_X)
+    def get_order(self,R:np.ndarray):
+        """ Generate the comparison results
 
-    
+        Args:
+            R (list): A list of items that are involved in the comparison.
+        
+        Returns :
+            o (list): A list of items rearranged in order of rank.
+        """
+        m = len(R)
+        o = [m-1 for _ in range(m)]
+        for i in range(m-1):
+            R = R/sum(R)
+            win = np.random.multinomial(1,R)
+            ind = np.nonzero(win == 1)[0][0]
+            o[ind] = i
+            R[ind] = 0
+        return o
 
-    
 if __name__ == '__main__':
     # Toy example
 
@@ -170,4 +205,4 @@ if __name__ == '__main__':
     m_lower = 2
     m_upper = 4
     H = MultipleComparison(n,N,v,m_lower=m_lower,m_upper=m_upper,Type='HSBM')
-    print(H.T)
+    print(H.hyperedges_set)

@@ -76,7 +76,7 @@ if __name__ == "__main__":
     # Fit PlusDC,PL
     print('-'*10+'PL model'+'-'*10)
     print('Running...')
-    u_pl,v_pl = algorithm.AM(T,cov,n,d,P=True,Eu=1e-5)
+    u_pl,v_pl = algorithm.AM(T,cov,n,d,PL=True,Eu=1e-5)
     l_pl = algorithm.multi_likelihood(T,cov,u_pl,v_pl)
 
     
