@@ -96,9 +96,9 @@ def multi_alternative(
         d: int, 
         u_initial: np.ndarray = None ,
         v_initial: np.ndarray = None,
-        E: float = 1e-6,
-        Eu: float = 1e-4,
-        Ev: float = 1e-8,
+        E: float = 1e-10,
+        Eu: float = 1e-10,
+        Ev: float = 1e-10,
         I: int = 50,
         detail: bool = False,
         PL: bool = False,
@@ -148,7 +148,7 @@ def multi_alternative(
         u = multi_fixv(hyperedges_list, covariates_list, v, n, W,E=Eu,I=1000, u_initial = u,detail = detail)
     else:
         # PlusDC
-        while error > E and i < 100:
+        while error > E:
             if detail:
                 print('-'*5+f'{i}'+'-'*5)
                 print(f'log-likelihood: {L[-1]}')
@@ -211,9 +211,9 @@ def pair_alternative(
         d: int, 
         u_initial: np.ndarray = None ,
         v_initial: np.ndarray = None,
-        E: float = 1e-6,
-        Eu: float = 1e-4,
-        Ev: float = 1e-8,
+        E: float = 1e-10,
+        Eu: float = 1e-10,
+        Ev: float = 1e-10,
         I: int = 50,
         detail: bool = False,
         PL: bool = False,

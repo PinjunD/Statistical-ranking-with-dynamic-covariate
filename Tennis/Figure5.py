@@ -97,7 +97,7 @@ if __name__ == "__main__":
     X = [x[:,s] for x in cov]
     #u_BT,v_BT = algorithm.AM(T,X,n,d,E = 1e-8,I=52,PL = True,TYPE = 'pair')
     u_BT,v_BT = algorithm.AM(T, X, n, d, PL = True, TYPE = 'pair', detail=True)
-    u_plusDC,v_plusDC = algorithm.AM(T, X, n, d, TYPE = 'pair', detail=True,I = 60)
+    u_plusDC,v_plusDC = algorithm.AM(T, X, n, d, TYPE = 'pair', detail=True,I = 50)
     likelihood_BT = algorithm.pair_likelihood(T, X, u_BT)
     likelihood_PlusDC = algorithm.multi_likelihood(T, X, u_plusDC, v_plusDC)
     print(f"Complete! v={v_plusDC}")
