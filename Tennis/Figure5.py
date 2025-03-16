@@ -76,11 +76,14 @@ if __name__ == "__main__":
     manager = Manager()
     shared_list = manager.list() 
     # get_subset
-    get_subset = lambda n: [subset for i in range(n + 1)
+    """get_subset = lambda n: [subset for i in range(n + 1)
                             for subset in itertools.combinations(list(range(n)), i)]
     subset = get_subset(6)
     res = Parallel(n_jobs=cpu_cores)(delayed(get_BIC)(T,cov,subset[i],N,n,shared_list) for i in range(len(subset)))
-    s = subset[np.argmin(res)]
+    s = subset[np.argmin(res)]"""
+
+    s = (0, 1, 2, 4)
+
     print('Complete!')
     print('\nWe have selected the optimal basis functions based on BIC.')
     print('(a,ρ) ∈ {(25,0.01),(25,0.03),(30,0.01),(35,0.01)}')
@@ -92,11 +95,11 @@ if __name__ == "__main__":
     ## fit PlusDC,BT
     d = len(s)
     X = [x[:,s] for x in cov]
-    u_BT,v_BT = algorithm.AM(T,X,n,d,E = 1e-8,I=52,PL = True,TYPE = 'pair')
-    u_plusDC,v_plusDC = algorithm.AM(T,X,n,d,
-                    E=1e-4/N,Eu=1e-8,Ev=1e-12,
-                    I=52,TYPE = 'pair')
-    likelihood_BT = algorithm.pair_likelihood(T,X,u_BT)
+    #u_BT,v_BT = algorithm.AM(T,X,n,d,E = 1e-8,I=52,PL = True,TYPE = 'pair')
+    u_BT,v_BT = algorithm.AM(T, X, n, d, PL = True, TYPE = 'pair', detail=True)
+    u_plusDC,v_plusDC = algorithm.AM(T, X, n, d, TYPE = 'pair', detail=True,I = 60)
+    likelihood_BT = algorithm.pair_likelihood(T, X, u_BT)
+    likelihood_PlusDC = algorithm.multi_likelihood(T, X, u_plusDC, v_plusDC)
     print(f"Complete! v={v_plusDC}")
     # plot table
     print('\n'+"="*10+'Ranking'+"="*10)
@@ -178,4 +181,7 @@ if __name__ == "__main__":
     plt.grid()
     plt.savefig(save_path('(b).pdf'))
     print(f'These two figures have been saved in {Figure_name}(a)(b).pdf')
+
+    print(f'ratio:{(likelihood_PlusDC-likelihood_BT)/abs(likelihood_BT)}')
+
     

@@ -1,21 +1,18 @@
 import numpy as np
-import warnings
-from typing import Callable,Dict,Any,List
+from typing import Callable, Dict, Any, List
 
 
-# Suppress all warnings
-warnings.filterwarnings("ignore")
 # Alternating maximization
 def AM(
     hyperedges_list: List[List[int]],
     covariates_list: List[np.ndarray],
     n: int,
     d: int, 
-    u_initial: np.ndarray = None ,
+    u_initial: np.ndarray = None,
     v_initial: np.ndarray = None,
-    E: float = 1e-6,
-    Eu: float = 1e-4,
-    Ev: float = 1e-8,
+    E: float = 1e-10,
+    Eu: float = 1e-10,
+    Ev: float = 1e-10,
     I: int = 50,
     detail: bool = False,
     PL: bool = False,
@@ -52,7 +49,7 @@ def AM(
                             PL = PL,E = E,Eu = Eu,Ev = Ev,I = I,detail = detail)
     else:
         print('please choose \'multi\' or \'pair\'')
-    return u,v
+    return u, v
 
 def multi_likelihood(
         hyperedges_list: List[List[int]],
@@ -321,6 +318,7 @@ def multi_Win(T,n):
     for i, t in enumerate(T):
         W[t[:-1]] += 1
     return W
+
 def multi_DynamicScore_Win(X,v):
     """ An intermediate step in the next function.
 
@@ -337,6 +335,7 @@ def multi_DynamicScore_Win(X,v):
         tem = tem/sum(tem)
         D_r.append(tem)
     return D_r
+
 def multi_update_R(R,W,D,T,n):
     '''The algorithm to optimize u:
 
@@ -360,6 +359,7 @@ def multi_update_R(R,W,D,T,n):
     R_new = W/M
     R_new /= np.sum(R_new)
     return R_new
+
 def multi_fixv(T,X,v,n,W, E = 1e-6 , I = 50, u_initial = None, detail = False):
     '''The algorithm to optimize u:
 
@@ -397,6 +397,7 @@ def multi_fixv(T,X,v,n,W, E = 1e-6 , I = 50, u_initial = None, detail = False):
     u = np.log(R_new)
     u = u - np.mean(u)
     return u
+
 def multi_update_v(T,X,u,d,v):
     '''Each step of optimizing v:
 
@@ -425,6 +426,7 @@ def multi_update_v(T,X,u,d,v):
     H = np.linalg.inv(H)
     update = H@tem
     return update
+
 def multi_fixu(T,X,u,d, E=1e-6, I = 1000,v_initial = None,detail = False):
     '''The algorithm to optimize v:
 

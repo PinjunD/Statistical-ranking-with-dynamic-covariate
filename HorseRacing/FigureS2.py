@@ -83,9 +83,7 @@ if __name__ == "__main__":
     print(f'The log-likelihood of PL model: {l_pl}')
     print('-'*10+'PlusDC model'+'-'*10)
     print('Running...')
-    u_plusDC,v_plusDC = algorithm.AM(T,cov,n,d,
-                                    E=1e-5,Eu=1e-5,Ev=1e-12,
-                                    I=52)
+    u_plusDC,v_plusDC = algorithm.AM(T,cov,n,d)
     likelihood = algorithm.multi_likelihood(T,cov,u_plusDC,v_plusDC)
     print(f"The log-likelihood of PlusDC model: {likelihood}")
     print(f"The coefficient of covariates: {v_plusDC}")

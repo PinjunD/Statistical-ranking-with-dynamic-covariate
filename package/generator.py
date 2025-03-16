@@ -1,8 +1,8 @@
 import numpy as np
-from typing import Callable,Dict,Any,List
+from typing import Callable, Dict, Any, List
 # Some initial configurations
 def u_uniform(n):
-    """Generate the intrinsic score from uniform distribution.
+    """Generate the intrinsic score from uniform distribution:
     
     Args:
         n (int): The number of items.
@@ -70,8 +70,7 @@ class MultipleComparison:
         m (List[int]): A list for representing the sizes of hyperedges.
         type (str): A string for selecting either 'NURHM' or 'HSBM'.
         x_center (np.ndarray): An np.ndarray as the center of the covariates. (Dimension: n*d)
-        x_generator (Callable[[np.ndarray], np.ndarray]): 
-            A function for generating dynamic covariates based on x_center.
+        x_generator (Callable[[np.ndarray], np.ndarray]): A function for generating dynamic covariates based on x_center.
         u (np.ndarray): An np.ndarray as the intrinsic score. (Dimension: n)
         v (np.ndarray): An np.ndarray as the coefficient of covariates.
         d (int): An int as the dimension of covariates.
@@ -80,7 +79,7 @@ class MultipleComparison:
 
     Methods:
         get_community(Dict) -> None
-        choose_node(m) -> None
+        choose_node(int) -> None
         get_edges() -> None
         get_order(np.ndarray) -> np.ndarray:
     """
@@ -123,7 +122,6 @@ class MultipleComparison:
         self.x_center = x_center(n,self.d)
         self.x_generator = x_generator
         
-        
         self.hyperedges_set = []
         self.covariates_set = []
         self.get_community(p_SBM(n))
@@ -137,6 +135,7 @@ class MultipleComparison:
             self.p = config['p'](self.n)
         else:
             pass
+
     def choose_node(self,m:int) -> None :
         """ Randomly select nodes
 
@@ -164,6 +163,7 @@ class MultipleComparison:
         else:
             e = None
         return e
+    
     def get_edges(self) -> None :
         """ Generate edges and edge-dependent covariates.
         """
@@ -177,6 +177,7 @@ class MultipleComparison:
             new_X = np.array([x for _, x in sorted(zip(o, dynamic_score))])
             self.hyperedges_set.append(new_edge)
             self.covariates_set.append(new_X)
+
     def get_order(self,R:np.ndarray):
         """ Generate the comparison results
 

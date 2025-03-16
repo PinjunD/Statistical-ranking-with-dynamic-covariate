@@ -31,9 +31,7 @@ def print_progress_bar(iteration, total, length=40):
 def get_results(T,cov,s,N,n,shared_list):
     X = [x[:,s] for x in cov]
     d = len(s)
-    u_plusDC,v_plusDC = algorithm.AM(T,X,n,d,
-                                 E=1e-5,Eu=1e-5,Ev=1e-12,
-                                 I=52)
+    u_plusDC,v_plusDC = algorithm.AM(T,X,n,d)
     likelihood = algorithm.multi_likelihood(T,X,u_plusDC,v_plusDC)
     AIC = (n-1+d) * 2 / N - 2 * likelihood
     BIC = (n-1+d) * np.log(N) / N - 2 * likelihood

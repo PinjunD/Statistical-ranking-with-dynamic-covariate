@@ -58,9 +58,10 @@ if __name__ == "__main__":
     d = len(s)
     X = [x[:,s] for x in cov]
     ## fit PlusDC
+    print(N)
     u_plusDC,v_plusDC = algorithm.AM(T,X,n,d,
-                    E=1e-4/N,Eu=1e-8,Ev=1e-12,
-                    I=52,TYPE = 'pair')
+                    E=1e-10,Eu=1e-10,Ev=1e-10,
+                    I=50,TYPE = 'pair')
     plusDC_top10 = np.argsort(u_plusDC)[-10:][::-1]
     u_t10_plusDC = u_plusDC[plusDC_top10]
     top_player = []
