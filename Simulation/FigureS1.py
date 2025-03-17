@@ -61,7 +61,7 @@ if __name__ == '__main__':
         'of the MLE in the PlusDC model using simulated data.\n'
         'We set n={200,400,600,800,1000} and conduct'
         'the simulations for NURHM and HSBM with 300 repeations.\n'
-        'Please note that the program takes nearly 3 hours to complete.')
+        'Please note that the program may take a considerable amount of time to complete.')
     """for i in range(5):
         print(str(5-i)+'.'*6)
         time.sleep(1)"""

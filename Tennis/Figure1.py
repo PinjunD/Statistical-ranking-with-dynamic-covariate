@@ -23,8 +23,6 @@ save_path = lambda x: os.path.join(project_root, 'results', f'{Figure_name}{x}')
 
 # loading data
 if __name__ == "__main__":
-
-
     print('In this program, we plot the log-scores of tennis players over time.')
     time.sleep(2)
     print('\n'+"="*10+'Data Loading'+"="*10)
@@ -67,6 +65,7 @@ if __name__ == "__main__":
     plusDC_top10 = np.argsort(u_plusDC)[-10:][::-1]
     u_t10_plusDC = u_plusDC[plusDC_top10]
     top_player = []
+    print(f'Complete! v = {v_plusDC}')
     print('Next, we fit the PlusDC model and identify the top 10 players.')
     print("="*20)
     for i,index in enumerate(plusDC_top10):

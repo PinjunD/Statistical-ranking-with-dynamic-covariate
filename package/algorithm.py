@@ -261,9 +261,9 @@ def pair_alternative(
 
     if PL:
         u = pair_fixv(T, K, v, n, win, lose,win_count, 
-                      u_initial = u,E=Eu,detail=detail)
+                      u_initial = u,E=Eu,detail=detail, I = 1000)
     else:
-        while error > E and i < 100 and not PL:
+        while error > E and not PL:
             if detail:
                 print('-'*5+f'{i}'+'-'*5)
                 print(f'log-likelihood: {L[-1]}')

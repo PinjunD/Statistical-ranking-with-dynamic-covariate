@@ -28,6 +28,7 @@ def print_progress_bar(iteration, total, length=40):
     bar = '\u2588' * bar_length + '-' * (length - bar_length)
     sys.stdout.write(f'\r|{bar}| {percent:.1%} Complete')
     sys.stdout.flush()
+
 def get_BIC(T,cov,s,N,n,shared_list):
     error = 1e-5
     X = [x[:,s] for x in cov]
@@ -38,6 +39,7 @@ def get_BIC(T,cov,s,N,n,shared_list):
     shared_list.append(1)
     print_progress_bar(len(shared_list),64)
     return BIC
+
 # loading data
 if __name__ == "__main__":
     print('In this program, we investigate the age effect among tennis players using PlusDC model.')
@@ -96,12 +98,13 @@ if __name__ == "__main__":
     ## fit PlusDC,BT
     d = len(s)
     X = [x[:,s] for x in cov]
-    #u_BT,v_BT = algorithm.AM(T,X,n,d,E = 1e-8,I=52,PL = True,TYPE = 'pair')
     u_BT,v_BT = algorithm.AM(T, X, n, d, PL = True, TYPE = 'pair')
     u_plusDC,v_plusDC = algorithm.AM(T, X, n, d, TYPE = 'pair')
     likelihood_BT = algorithm.pair_likelihood(T, X, u_BT)
     likelihood_PlusDC = algorithm.multi_likelihood(T, X, u_plusDC, v_plusDC)
     print(f"Complete! v={v_plusDC}")
+    print(f'BT log-likelihood:{likelihood_BT}')
+    print(f'PlusDC log-likelihood:{likelihood_PlusDC}')
     # plot table
     print('\n'+"="*10+'Ranking'+"="*10)
     np.set_printoptions(precision=3)
@@ -151,7 +154,7 @@ if __name__ == "__main__":
     plt.yticks(size = sz)
     rc('text', usetex=True)
     rc('font', family='serif')
-    ax.legend(title='Selected $(a, \lambda)$', prop={'size': 0.8*sz},\
+    ax.legend(title=r'Selected $(a, \lambda)$', prop={'size': int(0.8*sz)},\
             title_fontsize=sz, loc='upper right')
     plt.grid()
     plt.savefig(save_path('(a).pdf'))
