@@ -39,19 +39,19 @@ def printf(u_infty,v_infty,repeat,nn,name):
     print(screen)
 
 def simulation(n, N, v,d, m_lower, m_upper, name = 'NURHM', shared_list = None):
-        H = generator.MultipleComparison(n,N,v,m_lower=m_lower,m_upper=m_upper,Type = name)
-        u_true, v_true = H.u,H.v
-        E,X = H.hyperedges_set,H.covariates_set
-        u_estimation, v_estimation = algorithm.AM(E,X,n,d,u_initial=u_true,v_initial=v_true)
-        u_infty = max(abs(u_estimation-u_true))
-        v_infty = max(abs(v_estimation-v_true))
-        result = [H.n,u_infty,v_infty]
-        if shared_list is None:
-            pass
-        else:
-            shared_list.append(0)
-            printf(u_infty,v_infty,len(shared_list),n,name)
-        return result
+    H = generator.MultipleComparison(n,N,v,m_lower=m_lower,m_upper=m_upper,Type = name)
+    u_true, v_true = H.u,H.v
+    E,X = H.hyperedges_set,H.covariates_set
+    u_estimation, v_estimation = algorithm.AM(E,X,n,d,u_initial=u_true,v_initial=v_true)
+    u_infty = max(abs(u_estimation-u_true))
+    v_infty = max(abs(v_estimation-v_true))
+    result = [H.n,u_infty,v_infty]
+    if shared_list is None:
+        pass
+    else:
+        shared_list.append(0)
+        printf(u_infty,v_infty,len(shared_list),n,name)
+    return result
 
 repeat_time = 300 # set 300
 
@@ -86,8 +86,9 @@ if __name__ == '__main__':
         shared_list = manager.list() 
         tasks = [delayed(simulation)(nn, N, v, d, m_lower, m_upper,name = 'NURHM',shared_list=shared_list) 
                 for i in range(repeat_time) ]
-        results_temp = np.array(Parallel(n_jobs=cpu_cores)(tasks))
-        results.append(results_temp)
+        results_temp = Parallel(n_jobs=cpu_cores)(tasks)
+        results += results_temp
+    results = np.array(results)
     ## Prepocessing data
     S,T = [],[]
     for nn in n:
@@ -121,14 +122,20 @@ if __name__ == '__main__':
     print(f'We have saved the NURHM results as {Figure_name}(a).pdf and {Figure_name}(b).pdf.\n')
 
     # HSBM
-    print('\n='*10+'HSBM'+'='*10)
+    print('='*10+'HSBM'+'='*10)
     ## Settings
     N = lambda n: int(0.07*n**2)
     m_lower = 5
     m_upper = 6
-    tasks = [delayed(simulation)(nn, N, v, d, m_lower, m_upper,name = 'HSBM',repeat = repeat+1) 
-            for nn in n for repeat in range(repeat_time) ]
-    results = np.array(Parallel(n_jobs=cpu_cores)(tasks))
+    results = []
+    for nn in n:
+        manager = Manager()
+        shared_list = manager.list() 
+        tasks = [delayed(simulation)(nn, N, v, d, m_lower, m_upper,name = 'HSBM',shared_list=shared_list) 
+                for i in range(repeat_time) ]
+        results_temp = Parallel(n_jobs=cpu_cores)(tasks)
+        results += results_temp
+    results = np.array(results)
     ## Prepocessing data
     S,T = [],[]
     for nn in n:

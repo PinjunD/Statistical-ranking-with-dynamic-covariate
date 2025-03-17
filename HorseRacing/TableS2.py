@@ -105,7 +105,6 @@ if __name__ == "__main__":
     get_subset = lambda n: [subset for i in range(n + 1)
                             for subset in itertools.combinations(list(range(n)), i)]
     subset = get_subset(3)
-
     results = Parallel(n_jobs=cpu_cores)(delayed(get_results)(T,cov,ss,N,n,shared_list) for ss in subset)
     print('\n')
     print('Finally, we calculate the corresponding log-likelihood, AIC, and BIC.')

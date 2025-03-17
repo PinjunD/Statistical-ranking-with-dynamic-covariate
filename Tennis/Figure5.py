@@ -29,9 +29,10 @@ def print_progress_bar(iteration, total, length=40):
     sys.stdout.write(f'\r|{bar}| {percent:.1%} Complete')
     sys.stdout.flush()
 def get_BIC(T,cov,s,N,n,shared_list):
+    error = 1e-5
     X = [x[:,s] for x in cov]
     d = len(s)
-    u_plusDC,v_plusDC = algorithm.AM(T,X,n,d,E=1e-3,Eu=1e-8,Ev=1e-12,TYPE = 'pair')
+    u_plusDC,v_plusDC = algorithm.AM(T,X,n,d,E=error,Eu=error,Ev=error,TYPE = 'pair')
     likelihood = algorithm.multi_likelihood(T,X,u_plusDC,v_plusDC)
     BIC = (n-1+d) * np.log(N) - 2*likelihood*N
     shared_list.append(1)
@@ -48,11 +49,12 @@ if __name__ == "__main__":
     players = df[['winner_name','loser_name']]
     counts = pd.Series(players.values.ravel()).value_counts()
     playerID = {value: index for index, value in enumerate(counts.index.tolist())}
+    playerID_str = {value: str(index) for index, value in enumerate(counts.index.tolist())}
     n = len(playerID)
     ## matches
     name_columns = ['winner_name','loser_name']
-    Matches = df[name_columns].replace(playerID)
-    T = np.array(Matches).tolist()
+    Matches = df[name_columns].replace(playerID_str)
+    T = np.array(Matches).astype(int).tolist()
     N = len(T)
     ## age
     age_columns = ['winner_age','loser_age']
@@ -76,16 +78,15 @@ if __name__ == "__main__":
     manager = Manager()
     shared_list = manager.list() 
     # get_subset
-    """get_subset = lambda n: [subset for i in range(n + 1)
+    get_subset = lambda n: [subset for i in range(n + 1)
                             for subset in itertools.combinations(list(range(n)), i)]
     subset = get_subset(6)
     res = Parallel(n_jobs=cpu_cores)(delayed(get_BIC)(T,cov,subset[i],N,n,shared_list) for i in range(len(subset)))
-    s = subset[np.argmin(res)]"""
+    s = subset[np.argmin(res)]
 
-    s = (0, 1, 2, 4)
 
-    print('Complete!')
-    print('\nWe have selected the optimal basis functions based on BIC.')
+    print('\nComplete!')
+    print('We have selected the optimal basis functions based on BIC.')
     print('(a,ρ) ∈ {(25,0.01),(25,0.03),(30,0.01),(35,0.01)}')
     time.sleep(1)
 
@@ -96,8 +97,8 @@ if __name__ == "__main__":
     d = len(s)
     X = [x[:,s] for x in cov]
     #u_BT,v_BT = algorithm.AM(T,X,n,d,E = 1e-8,I=52,PL = True,TYPE = 'pair')
-    u_BT,v_BT = algorithm.AM(T, X, n, d, PL = True, TYPE = 'pair', detail=True)
-    u_plusDC,v_plusDC = algorithm.AM(T, X, n, d, TYPE = 'pair', detail=True,I = 50)
+    u_BT,v_BT = algorithm.AM(T, X, n, d, PL = True, TYPE = 'pair')
+    u_plusDC,v_plusDC = algorithm.AM(T, X, n, d, TYPE = 'pair')
     likelihood_BT = algorithm.pair_likelihood(T, X, u_BT)
     likelihood_PlusDC = algorithm.multi_likelihood(T, X, u_plusDC, v_plusDC)
     print(f"Complete! v={v_plusDC}")
@@ -182,6 +183,5 @@ if __name__ == "__main__":
     plt.savefig(save_path('(b).pdf'))
     print(f'These two figures have been saved in {Figure_name}(a)(b).pdf')
 
-    print(f'ratio:{(likelihood_PlusDC-likelihood_BT)/abs(likelihood_BT)}')
 
     

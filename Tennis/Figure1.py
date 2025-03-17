@@ -23,6 +23,8 @@ save_path = lambda x: os.path.join(project_root, 'results', f'{Figure_name}{x}')
 
 # loading data
 if __name__ == "__main__":
+
+
     print('In this program, we plot the log-scores of tennis players over time.')
     time.sleep(2)
     print('\n'+"="*10+'Data Loading'+"="*10)
@@ -32,11 +34,12 @@ if __name__ == "__main__":
     players = df[['winner_name','loser_name']]
     counts = pd.Series(players.values.ravel()).value_counts()
     playerID = {value: index for index, value in enumerate(counts.index.tolist())}
+    playerID_str = {value: str(index) for index, value in enumerate(counts.index.tolist())}
     n = len(playerID)
     ## matches
     name_columns = ['winner_name','loser_name']
-    Matches = df[name_columns].replace(playerID)
-    T = np.array(Matches).tolist()
+    Matches = df[name_columns].replace(playerID_str)
+    T = np.array(Matches).astype(int).tolist()
     N = len(T)
     ## age
     age_columns = ['winner_age','loser_age']
@@ -47,7 +50,7 @@ if __name__ == "__main__":
     # Data analysis
     print('\n'+"="*10+'Data analysis'+"="*10)
     print('We have selected the optimal basis functions based on the BIC.')
-    print('(a,ρ) ∈ {(25,0.01),(25,0.03),(30,0.01),(35,0.01)}')
+    print('Here, (a,ρ) ∈ {(25,0.01),(25,0.03),(30,0.01),(35,0.01)}.')
     A = [25,30,35]
     Lamb = [0.01, 0.03]
     parameters = [(a,lamb) for a in A for lamb in Lamb]
@@ -58,10 +61,9 @@ if __name__ == "__main__":
     d = len(s)
     X = [x[:,s] for x in cov]
     ## fit PlusDC
-    print(N)
-    u_plusDC,v_plusDC = algorithm.AM(T,X,n,d,
-                    E=1e-10,Eu=1e-10,Ev=1e-10,
-                    I=50,TYPE = 'pair')
+    print('We use PlusDC to fit the data using various combinations of the four bases.')
+    print('Running...')
+    u_plusDC,v_plusDC = algorithm.AM(T,X,n,d,TYPE = 'pair')
     plusDC_top10 = np.argsort(u_plusDC)[-10:][::-1]
     u_t10_plusDC = u_plusDC[plusDC_top10]
     top_player = []
