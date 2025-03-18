@@ -28,7 +28,7 @@ Statistical-ranking-with-dynamic-covariate/
 │
 ├── results/
 │
-├── guideline.pdf
+├── Guideline.pdf
 │
 └── README.md
 ```
@@ -58,7 +58,7 @@ python "TableS2.py" # In HorseRacing
 python "FigureS2.py" # In HorseRacing
 python "FigureS3.py" # In HorseRacing
 ```
-Specifically, you can refer to the [*guideline.pdf*](guideline.pdf).
+Specifically, you can refer to the [*Guideline.pdf*](guideline.pdf).
 ### 2.1. Demonstration  
 #### **Synthetic Data**  
 This experiment verifies the uniform consistency of the maximum likelihood estimator (MLE) in the PlusDC model using simulated data, considering both the NURHM and HSBM random hypergraph models.  

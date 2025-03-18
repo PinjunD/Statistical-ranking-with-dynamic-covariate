@@ -1,8 +1,6 @@
 import numpy as np
 from typing import Callable, Dict, Any, List
 
-
-# Alternating maximization
 def AM(
     hyperedges_list: List[List[int]],
     covariates_list: List[np.ndarray],
@@ -14,6 +12,8 @@ def AM(
     Eu: float = 1e-10,
     Ev: float = 1e-10,
     I: int = 50,
+    Iu: int = 50,
+    Iv: int = 50,
     detail: bool = False,
     PL: bool = False,
     TYPE: str ='multi'
@@ -30,7 +30,9 @@ def AM(
         E (float): The accuracy of the iterations in alternating algorithm.
         Eu (float): The accuracy of the iterations in updating u.
         Ev (float): The accuracy of the iterations in updating v.
-        I (int): The maxinum iteration times
+        I (int): The maxinum iteration times of alternating.
+        Iu (int): The maxinum iteration times of MM algorithm.
+        Iv (int): The maxinum iteration times of Netwon algorithm.
         detail (bool): Print the iteration details?
         P (bool): Fit PL?
         save_likelihood (bool): Save log-likelihood?
@@ -42,11 +44,17 @@ def AM(
     if TYPE == 'multi':
         u, v= multi_alternative(hyperedges_list, covariates_list, n, d, 
                             u_initial = u_initial, v_initial = v_initial, 
-                            PL = PL,E = E,Eu = Eu,Ev = Ev,I = I,detail = detail)
+                            PL = PL, detail = detail,
+                            E = E, Eu = Eu, Ev = Ev,
+                            I = I, Iu = Iu, Iv = Iv                            
+                            )
     elif TYPE == 'pair':
         u, v= pair_alternative(hyperedges_list, covariates_list, n, d, 
                             u_initial = u_initial, v_initial = v_initial, 
-                            PL = PL,E = E,Eu = Eu,Ev = Ev,I = I,detail = detail)
+                            PL = PL, detail = detail,
+                            E = E, Eu = Eu, Ev = Ev,
+                            I = I, Iu = Iu, Iv = Iv  
+                            )
     else:
         print('please choose \'multi\' or \'pair\'')
     return u, v
@@ -99,7 +107,9 @@ def multi_alternative(
         E: float = 1e-10,
         Eu: float = 1e-10,
         Ev: float = 1e-10,
-        I: int = 50,
+        I: int = 1000,
+        Iu: int = 50,
+        Iv: int = 50,
         detail: bool = False,
         PL: bool = False,
         save_likelihood: bool = False):
@@ -115,7 +125,9 @@ def multi_alternative(
         E (float): The accuracy of the iterations in alternating algorithm.
         Eu (float): The accuracy of the iterations in updating u.
         Ev (float): The accuracy of the iterations in updating v.
-        I (int): The maxinum iteration times
+        I (int): The maxinum iteration times of alternating.
+        Iu (int): The maxinum iteration times of MM algorithm.
+        Iv (int): The maxinum iteration times of Netwon algorithm.
         detail (bool): Print the iteration details?
         PL (bool): Fit PL?
         save_likelihood (bool): Save log-likelihood?
@@ -145,17 +157,17 @@ def multi_alternative(
     i, error = 1, 1
     if PL:
         # PL
-        u = multi_fixv(hyperedges_list, covariates_list, v, n, W,E=Eu,I=1000, u_initial = u,detail = detail)
+        u = multi_fixv(hyperedges_list, covariates_list, v, n, W,E=Eu,I=Iu, u_initial = u,detail = detail)
     else:
         # PlusDC
-        while error > E:
+        while error > E and i < I:
             if detail:
                 print('-'*5+f'{i}'+'-'*5)
                 print(f'log-likelihood: {L[-1]}')
             else:
                 pass
-            v1 = multi_fixu(hyperedges_list, covariates_list, u, d, v_initial=v.copy(),E=Ev,I=I,detail=detail)
-            u1 = multi_fixv(hyperedges_list, covariates_list, v1, n, W, u_initial = u,I=I,E=Eu,detail=detail)
+            v1 = multi_fixu(hyperedges_list, covariates_list, u, d, v_initial=v.copy(),I=Iv,E=Ev,detail=detail)
+            u1 = multi_fixv(hyperedges_list, covariates_list, v1, n, W, u_initial = u,I=Iu,E=Eu,detail=detail)
             u = u1
             v = v1
             l2 = multi_likelihood(hyperedges_list, covariates_list, u, v)
@@ -215,6 +227,8 @@ def pair_alternative(
         Eu: float = 1e-10,
         Ev: float = 1e-10,
         I: int = 50,
+        Iu: int = 50,
+        Iv: int = 50,
         detail: bool = False,
         PL: bool = False,
         save_likelihood: bool = False):
@@ -230,7 +244,10 @@ def pair_alternative(
         E (float): The accuracy of the iterations in alternating algorithm.
         Eu (float): The accuracy of the iterations in updating u.
         Ev (float): The accuracy of the iterations in updating v.
-        I (int): The maxinum iteration times
+        I (int): The maxinum iteration times of alternating.
+        Iu (int): The maxinum iteration times of MM algorithm.
+        Iv (int): The maxinum iteration times of Netwon algorithm.
+        
         detail (bool): Print the iteration details?
         P (bool): Fit PL?
         save_likelihood (bool): Save log-likelihood?
@@ -261,17 +278,17 @@ def pair_alternative(
 
     if PL:
         u = pair_fixv(T, K, v, n, win, lose,win_count, 
-                      u_initial = u,E=Eu,detail=detail, I = 1000)
+                      u_initial = u,E=Eu,I=Iu, detail=detail)
     else:
-        while error > E and not PL:
+        while error > E and i < I:
             if detail:
                 print('-'*5+f'{i}'+'-'*5)
                 print(f'log-likelihood: {L[-1]}')
             else:
                 pass
-            v = pair_fixu(T, K, u, d, v_initial = v.copy(),E=Ev,I=I,detail=detail)
+            v = pair_fixu(T, K, u, d, v_initial = v.copy(),E=Ev,I=Iv,detail=detail)
             u = pair_fixv(T, K, v, n, win, lose, win_count,
-                           u_initial = u,E=Eu,I=I,detail=detail)
+                           u_initial = u,E=Eu,I=Iu,detail=detail)
             l2 = pair_likelihood(hyperedges_list,covariates_list, u, v)
             L.append(l2)
 

@@ -101,7 +101,7 @@ if __name__ == "__main__":
     u_BT,v_BT = algorithm.AM(T, X, n, d, PL = True, TYPE = 'pair')
     u_plusDC,v_plusDC = algorithm.AM(T, X, n, d, TYPE = 'pair')
     likelihood_BT = algorithm.pair_likelihood(T, X, u_BT)
-    likelihood_PlusDC = algorithm.multi_likelihood(T, X, u_plusDC, v_plusDC)
+    likelihood_PlusDC = algorithm.pair_likelihood(T, X, u_plusDC, v_plusDC)
     print(f"Complete! v={v_plusDC}")
     print(f'BT log-likelihood:{likelihood_BT}')
     print(f'PlusDC log-likelihood:{likelihood_PlusDC}')
